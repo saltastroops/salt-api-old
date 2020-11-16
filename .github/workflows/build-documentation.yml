@@ -1,4 +1,4 @@
-name: build documentation.yml.
+name: Publish docs via GitHub Pages
 on:
   push:
     branches:
@@ -9,7 +9,7 @@ jobs:
     name: Deploy docs
     runs-on: ubuntu-latest
     steps:
-      - name: main
+      - name: Checkout main
         uses: actions/checkout@v1
 
       - name: Deploy docs
