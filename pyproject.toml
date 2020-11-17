@@ -6,6 +6,11 @@ authors = ["Christian Hettlage <hettlage@saao.ac.za>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
+starlette = "^0.14.1"
+uvicorn = "^0.12.2"
+starlette-jwt = "^0.1.9"
+PyMySQL = "^0.10.1"
+pandas = "^1.1.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.2"
