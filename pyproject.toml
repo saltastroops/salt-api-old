@@ -10,6 +10,7 @@ ariadne = "^0.12.0"
 starlette = "^0.13.0"
 uvicorn = "^0.12.2"
 python-dateutil = "^2.8.1"
+pre-commit = "^2.8.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.2"
@@ -22,6 +23,10 @@ mypy = "^0.790"
 mkdocs = "^1.1.2"
 mkdocs-material = "^6.1.5"
 pytz = "^2020.4"
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
