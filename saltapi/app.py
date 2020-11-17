@@ -4,7 +4,7 @@ from ariadne import load_schema_from_path, make_executable_schema
 from ariadne.asgi import GraphQL
 from starlette.applications import Starlette
 
-type_defs = load_schema_from_path("saltapi/schema.graphql")
+type_defs = load_schema_from_path("saltapi/graphql/schema.graphql")
 
 schema = make_executable_schema(type_defs)
 

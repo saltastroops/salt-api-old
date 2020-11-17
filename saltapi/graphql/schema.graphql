@@ -1,0 +1,138 @@
+"""
+A datetime in ISO 8601 format.
+"""
+scalar Datetime
+
+"""
+A proposal code, such as 2020-2-SCI-053.
+"""
+scalar ProposalCode
+
+"""
+An uploaded file.
+"""
+scalar Upload
+
+type Query {
+    """A placeholder, required until a "real" query field is added."""
+    telescope: String!
+}
+
+type Mutation {
+    """
+    Submit blocks.
+
+    If any of the submitted block exists already, it will be replaced. Otherwise a new
+    block is created.
+
+    The query returns an id which can be used with the `submissionLog` subscription to
+    query the submission log.
+    """
+    submitBlocks(
+        """
+        The zip or XML file containing the block content.
+        """
+        blocks: Upload!,
+        """
+        The proposal code of the proposal to which this block belongs.
+        """
+        proposalCode: ProposalCode!
+    ): ID
+
+    """
+    Submit a proposal.
+
+    If a proposal code is given, it must be the same proposal code as the one in the
+    submitted proposal file. Conversely, if the file contains a proposal code, the
+    `proposalCode` argument must be included, and it must have the same value as the
+    proposal code in the file.
+
+    If a proposal clode is given, a proposal with that code muat exist, and the proposal
+    is replaced.
+
+    The query returns an id which can be used with the `submissionLog` subscription to
+    query the submission log.
+    """
+    submitProposal(
+        """
+        The zip file containing the proposal content.
+        """
+        proposal: Upload!,
+        """
+        The proposal code.
+        """
+        proposalCode: ProposalCode
+    ): ID
+}
+
+type Subscription {
+    """
+    Submission log entries.
+
+    During the submission of proposals and blocks events and messages are logged. When
+    subscribing to this field, the current list of log entries is returned. Subsequently
+    the new log entries are returned.
+
+    A log entry includes a message, the submission status, the log level and the
+    timestamp.
+
+    There is no guanantee that the log is still available once the submission has
+    succeeded or failed.
+
+    An empty list is returned if there exists no log.
+    """
+    submissionLog(
+        """
+        The submission id.
+
+        This is the id returned by the mutations for submitting proposals or blocks.
+        """
+        submissionId: ID!
+    ): [SubmissionLogEntry!]!
+}
+
+"""
+A log level.
+"""
+enum LogLevel {
+    ERROR
+    INFO
+    WARNING
+}
+
+"""
+A log entry for a submission.
+"""
+type SubmissionLogEntry {
+    """
+    The log level.
+    """
+    logLevel: LogLevel!
+    """
+    The log message.
+    """
+    message: String!
+    """
+    The submission status.
+    """
+    status: SubmissionStatus!
+    """
+    The submission id.
+
+    This is the id returned by the mutations for submitting proposals or blocks.
+    """
+    submissionId: ID!
+    """
+    The time when the log entry was created.
+    """
+    timestamp: Datetime!
+}
+
+"""
+A submission status.
+"""
+enum SubmissionStatus {
+    FAILED
+    IN_PROGRESS
+    SUCCESSFUL
+}
