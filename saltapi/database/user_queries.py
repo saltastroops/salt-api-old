@@ -1,10 +1,12 @@
+from typing import Optional
+
 import pandas as pd
 
-from database.sdb_connection import sdb_connect
-from util.error import InvalidUsage
+from saltapi.database.sdb_connection import sdb_connect
+from saltapi.util.error import InvalidUsage
 
 
-def query_id(username):
+def query_id(username: str) -> Optional[int]:
     """
     Query the PIPT user id.
 
@@ -32,7 +34,7 @@ def query_id(username):
         return None
 
 
-def verify_user(username, password):
+def verify_user(username: str, password: str) -> Optional:
     """
     Verify the username and password of the user.
 
@@ -56,3 +58,5 @@ def verify_user(username, password):
     conn.close()
     if not result.iloc[0]['UserCount']:
         raise InvalidUsage('Username or password wrong')
+
+    return True

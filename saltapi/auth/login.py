@@ -1,13 +1,15 @@
+from typing import Dict
+
 import jwt
 import os
 
 from starlette.responses import JSONResponse
 
-from database.user_queries import query_id, verify_user
-from util.error import InvalidUsage
+from saltapi.database.user_queries import query_id, verify_user
+from saltapi.util.error import InvalidUsage
 
 
-def create_token(username):
+def create_token(username: str) -> str:
     """
     Create a token containing the user id of the given PIPT user.
 
@@ -32,7 +34,7 @@ def create_token(username):
     return token
 
 
-def get_user_token(credentials):
+def get_user_token(credentials: Dict[str, str]) -> str:
     if credentials is None:
         raise InvalidUsage(message='Username or password not provided', status_code=400)
     try:
@@ -56,8 +58,26 @@ def is_valid_token(token):
         return False
 
 
-def login_user(request):
-    print(request.json)
+def get_user_details(username) -> None:
+    # Todo query user details from sdb.
+    return None
+
+
+def login_user(request) -> JSONResponse:
+    """
+
+    Parameters
+    ----------
+    request
+        Http request with user credentials
+
+    Returns
+    -------
+    User token
+    If user is authenticated.
+    User details
+
+    """
     token = "I am a token"
     return JSONResponse({
         "token": token,
