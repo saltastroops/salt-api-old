@@ -10,7 +10,7 @@ from graphql import (
     default_field_resolver,
 )
 
-from saltapi.auth.roles import has_role
+from saltapi.authenticate.roles import has_role
 
 
 class PermittedForDirective(SchemaDirectiveVisitor):

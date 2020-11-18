@@ -14,7 +14,9 @@ from starlette.authentication import (
 from starlette.middleware import Middleware
 from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.requests import HTTPConnection
+from starlette.routing import Route
 
+from saltapi.authenticate import login_user
 from saltapi.graphql.directives import PermittedForDirective
 from saltapi.submission.resolvers import resolve_submit_proposal
 
@@ -27,6 +29,10 @@ class FakeAuthBackend(AuthenticationBackend):
     ) -> typing.Optional[typing.Tuple["AuthCredentials", "BaseUser"]]:
         """Authenticate the user."""
         return AuthCredentials(["VIEW_ALL_PROPOSALS"]), SimpleUser("somebody")
+
+
+async def login(request):
+    return await login_user(request)
 
 
 middleware = [Middleware(AuthenticationMiddleware, backend=FakeAuthBackend())]
@@ -43,5 +49,10 @@ schema = make_executable_schema(
     type_defs, mutation, directives={"permittedFor": PermittedForDirective}
 )
 
-app = Starlette(middleware=middleware)
+app = Starlette(middleware=middleware, debug=True, routes=[
+    Route('/login', login, methods=['POST']),
+])
 app.mount("/", GraphQL(schema))
+# app = Starlette(debug=True, routes=[
+#     Route('/login', login, methods=['POST']),
+# ])
