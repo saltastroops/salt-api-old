@@ -1,4 +1,5 @@
 """The server for the SALT API."""
+import pathlib
 import typing
 
 from ariadne import MutationType, load_schema_from_path, make_executable_schema
@@ -30,6 +31,9 @@ class FakeAuthBackend(AuthenticationBackend):
 
 middleware = [Middleware(AuthenticationMiddleware, backend=FakeAuthBackend())]
 
+schema_path = (
+    pathlib.Path(__file__).parent.absolute().joinpath("graphql", "schema.graphql")
+)
 type_defs = load_schema_from_path("saltapi/graphql/schema.graphql")
 
 mutation = MutationType()

@@ -24,7 +24,7 @@ class PermittedForDirective(SchemaDirectiveVisitor):
         """Check authorization and execute query."""
         original_resolver = field.resolve or default_field_resolver
 
-        def new_resolver(*args, **kwargs):
+        async def new_resolver(*args, **kwargs):
             roles = self.args.get("roles")
             permissions = self.args.get("permissions")
             user = args[1].context["request"].user

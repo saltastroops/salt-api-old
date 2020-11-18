@@ -82,7 +82,7 @@ type Mutation {
         """
         The zip file containing the proposal content.
         """
-        proposal: Upload,
+        proposal: Upload!,
         """
         The proposal code.
         """
