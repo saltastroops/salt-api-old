@@ -31,6 +31,6 @@ def serialize_datetime(t: datetime) -> str:
 def parse_datetime(t: str) -> datetime:
     """Parse a string as a datetime in ISO 8601 format."""
     parsed = parser.isoparse(t)
-    if parsed.tzinfo is None or parsed.tzinfo.utcoffset(t) is None:
+    if parsed.tzinfo is None or parsed.tzinfo.utcoffset(parsed) is None:
         raise ValueError("The datetime is missing timezone information.")
     return parsed

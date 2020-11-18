@@ -13,8 +13,33 @@ An uploaded file.
 """
 scalar Upload
 
+"""
+A directive for handling permissions.
+
+A user can only query a field decorated with this directive if they have any of the
+roles or permissions specified in its `roles` and `permissions` arguments. If they
+don;t, the directive raises an exception.
+
+For example, consider the following type:
+
+```
+type Proposal {
+  content(proposalCode: ProposalCode): String!
+                @permittedFor(roles=[PROPOSAL_OWNER], permissions=[VIEW_ALL_PROPOSALS])
+}
+```
+
+The content field can be queried if the user is an owner of the specified proposal or
+if they may view all proposals.
+
+The directive uses the arguments of the field resolver as required.
+"""
+directive @permittedFor(roles: [Role!], permissions: [Permission!]) on FIELD_DEFINITION
+
 type Query {
-    """A placeholder, required until a "real" query field is added."""
+    """
+    A placeholder, required until a "real" query field is added.
+    """
     telescope: String!
 }
 
@@ -37,7 +62,7 @@ type Mutation {
         The proposal code of the proposal to which this block belongs.
         """
         proposalCode: ProposalCode!
-    ): ID
+    ): ID @permittedFor(roles: [PROPOSAL_OWNER], permissions: [VIEW_ALL_PROPOSALS])
 
     """
     Submit a proposal.
@@ -62,7 +87,7 @@ type Mutation {
         The proposal code.
         """
         proposalCode: ProposalCode
-    ): ID
+    ): ID @permittedFor(roles: [PROPOSAL_OWNER], permissions: [VIEW_ALL_PROPOSALS])
 }
 
 type Subscription {
@@ -126,6 +151,41 @@ type SubmissionLogEntry {
     The time when the log entry was created.
     """
     timestamp: Datetime!
+}
+
+"""
+A user permission.
+"""
+enum Permission {
+    VIEW_ALL_PROPOSALS
+}
+
+"""
+A user role.
+"""
+enum Role {
+    """
+    An administrator.
+    """
+    ADMINISTRATOR
+
+    """
+    The Principal Contact of a proposal;
+    """
+    PRINCIPAL_CONTACT
+
+    """
+    The Principal Investigator of a proposal.
+    """
+    PRINCIPAL_INVESTIGATOR
+
+    """
+    An owner of a proposal.
+
+    Ownership is decided by the proposal code. If there is no proposal code everyone is
+    considered an owner. This should happen for new submissions only.
+    """
+    PROPOSAL_OWNER
 }
 
 """
