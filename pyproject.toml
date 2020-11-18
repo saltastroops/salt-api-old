@@ -6,14 +6,11 @@ authors = ["Christian Hettlage <hettlage@saao.ac.za>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-starlette = "^0.13"
 ariadne = "^0.12.0"
+starlette = "^0.13.0"
 uvicorn = "^0.12.2"
-starlette-jwt = "^0.1.9"
-pandas = "^1.1.4"
 python-dateutil = "^2.8.1"
-aiomysql = "^0.0.20"
-boolean = "^1.1.0"
+pre-commit = "^2.8.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.2"
@@ -25,6 +22,11 @@ isort = "^5.6.4"
 mypy = "^0.790"
 mkdocs = "^1.1.2"
 mkdocs-material = "^6.1.5"
+pytz = "^2020.4"
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
