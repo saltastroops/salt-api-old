@@ -5,7 +5,7 @@ import os
 
 from starlette.responses import JSONResponse
 
-from saltapi.database.user_queries import query_id, verify_user
+from saltapi.database.user_queries import query_user_id, verify_user, query_user
 from saltapi.util.error import InvalidUsage
 
 
@@ -22,8 +22,7 @@ def create_token(username: str) -> str:
     -------
     The user token
     """
-
-    user_id = query_id(username)
+    user_id = query_user_id(username)
     if user_id is None:
         raise Exception(f'User not found: {username}')
     user = {
@@ -58,11 +57,6 @@ def is_valid_token(token):
         return False
 
 
-def get_user_details(username) -> None:
-    # Todo query user details from sdb.
-    return None
-
-
 def login_user(request) -> JSONResponse:
     """
 
@@ -78,14 +72,17 @@ def login_user(request) -> JSONResponse:
     User details
 
     """
-    token = "I am a token"
+
+    username = ""
+    password = ""
+
+    if verify_user(username, password):
+        return JSONResponse({
+            "token": create_token(username),
+            "isAuthenticated": "true",
+            "user": query_user(query_user_id(username))
+        })
     return JSONResponse({
-        "token": token,
-        "isAuthenticated": "True",
-        "user": {
-            "username": "",
-            "email": "",
-            "role": "admin",
-            "permissions": ["CAN SUBMIT PROPOSALS"]
-        }
+        "isAuthenticated": "false",
+        "message": "User can nor be authenticated username or password might be wrong."
     })

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict
 
 import pandas as pd
 
@@ -6,7 +6,7 @@ from saltapi.database.sdb_connection import sdb_connect
 from saltapi.util.error import InvalidUsage
 
 
-def query_id(username: str) -> Optional[int]:
+def query_user_id(username: str) -> Optional[int]:
     """
     Query the PIPT user id.
 
@@ -60,3 +60,33 @@ def verify_user(username: str, password: str) -> Optional:
         raise InvalidUsage('Username or password wrong')
 
     return True
+
+
+def query_user(user_id: int) -> Dict:
+    """
+    Query user details
+    Parameters
+    ----------
+    user_id
+
+    Returns
+    -------
+
+    """
+
+    sql = '''
+    SELECT * FROM PiptUser AS u
+        JOIN Investigator AS i using (Investigator_Id)
+    WHERE u.PiptUser_Id = {user_id}
+    '''.format(user_id=user_id)
+    conn = sdb_connect()
+    results = pd.read_sql(sql, conn)
+    conn.close()
+
+    return {
+        "username": results["Username"][0],
+        "first_name": results["FirstName"][0],
+        "last_name": results["Surname"][0],
+        "email": results["Email"][0],
+        "role": [] # Todo get user roles
+    }
