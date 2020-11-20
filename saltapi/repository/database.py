@@ -1,6 +1,12 @@
-import databases as databases
+"""The database."""
+
 import os
 
-SDB_URL = os.environ["SDB_DSN"]
+import databases as databases
+import dotenv
 
-sdb_connection = databases.Database(SDB_URL)
+dotenv.load_dotenv()
+
+DATABASE_DSN = os.environ["SDB_DSN"]
+
+database = databases.Database(DATABASE_DSN)

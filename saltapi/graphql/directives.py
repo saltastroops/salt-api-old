@@ -1,6 +1,6 @@
 """GraphQL schema directives."""
 
-from typing import Union
+from typing import Any, Union
 
 from ariadne import SchemaDirectiveVisitor
 from graphql import (
@@ -10,7 +10,7 @@ from graphql import (
     default_field_resolver,
 )
 
-from saltapi.authenticate.roles import has_role
+from saltapi.auth.roles import has_role
 
 
 class PermittedForDirective(SchemaDirectiveVisitor):
@@ -24,7 +24,7 @@ class PermittedForDirective(SchemaDirectiveVisitor):
         """Check authorization and execute query."""
         original_resolver = field.resolve or default_field_resolver
 
-        async def new_resolver(*args, **kwargs):
+        async def new_resolver(*args: Any, **kwargs: Any) -> Any:
             roles = self.args.get("roles")
             permissions = self.args.get("permissions")
             user = args[1].context["request"].user

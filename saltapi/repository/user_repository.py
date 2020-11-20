@@ -1,12 +1,29 @@
-from typing import Optional, Dict
+"""Access user  details from the database."""
 
-from saltapi.repository.database import sdb_connection
-from saltapi.util.error import InvalidUsage
+import dataclasses
+from typing import List, Optional
+
+from saltapi.repository.database import database
 
 
-async def find_user_id_by_credentials(username: str, password: str) -> Optional:
+@dataclasses.dataclass(frozen=True)
+class User:
+    """A SALT user."""
+
+    id: int
+    username: str
+    first_name: str
+    last_name: str
+    email: str
+    roles: List[str]
+    permissions: List[str]
+
+
+async def find_user_by_credentials(username: str, password: str) -> Optional[User]:
     """
-    Verify the username and password of the user.
+    Find the user with a given username and password.
+
+    In case the user credentials are invalid None is returned.
 
     Parameters
     ----------
@@ -14,56 +31,59 @@ async def find_user_id_by_credentials(username: str, password: str) -> Optional:
         The PIPT username.
     password : str
         The password of the user.
+
     Returns
     -------
     None.
     """
-    sql = f"""
+    query = """
 SELECT PiptUser_Id
 FROM PiptUser
-WHERE Username='{username}' AND Password=MD5('{password}')
+WHERE Username=:username AND Password=MD5(:password)
     """
+    values = {"username": username, "password": password}
+    result = await database.fetch_one(query=query, values=values)
+    if not result:
+        return None
+    return await find_user_by_id(result[0])
 
-    result = await sdb_connection.fetch_all(query=sql)
-    if not len(result):
-        raise InvalidUsage('Username or password wrong')
 
-    return result[0][0]
-
-
-async def find_user_by_id(user_id: int) -> Dict:
+async def find_user_by_id(user_id: int) -> Optional[User]:
     """
-    Query user details by user id.
+    Find the user with a given user id.
+
+    In case the user id does not exist None is returned.
 
     Parameters
     ----------
     user_id
-        A PIPT user id
+        A PIPT user id.
+
     Returns
     -------
-        The user Details
-
+        The user.
     """
-
-    sql = f'''
-SELECT 
+    sql = """
+SELECT
     Username,
     FirstName,
     Surname,
-    Email 
+    Email
 FROM PiptUser AS u
     JOIN Investigator AS i using (Investigator_Id)
-WHERE u.PiptUser_Id = {user_id}
-    '''
-    results = await sdb_connection.fetch_all(query=sql)
-    if not len(results):
-        raise InvalidUsage(message="User id is not recognised", status_code=500)
+WHERE u.PiptUser_Id = :user_id
+    """
+    values = {"user_id": user_id}
+    result = await database.fetch_one(query=sql, values=values)
+    if not result:
+        return None
 
-    return {
-        "username": results[0][0],
-        "first_name": results[0][1],
-        "last_name": results[0][2],
-        "email": results[0][3],
-        "role": [] # Todo get user roles
-    }
-
+    return User(
+        id=user_id,
+        username=result[0],
+        first_name=result[1],
+        last_name=result[2],
+        email=result[3],
+        roles=[],  # TODO: get user roles
+        permissions=[],  # TODO: get user permissions
+    )
