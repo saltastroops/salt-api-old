@@ -9,40 +9,49 @@ from starlette.authentication import (
     AuthCredentials,
     AuthenticationBackend,
     BaseUser,
-    SimpleUser,
+    SimpleUser, AuthenticationError, requires,
 )
 from starlette.middleware import Middleware
 from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.requests import HTTPConnection
+from starlette.responses import JSONResponse
 from starlette.routing import Route
 
-from saltapi.authenticate import login_user
+from saltapi.authenticate import login_user, validate_token, get_user_id_from_token
 from saltapi.graphql.directives import PermittedForDirective
 from saltapi.repository.database import sdb_connection
 from saltapi.repository.user_repository import find_user_by_id
 from saltapi.submission.resolvers import resolve_submit_proposal
 
 
-class FakeAuthBackend(AuthenticationBackend):
-    """Fake authentication backend."""
+class TokenAuthentication(AuthenticationBackend):
+    async def authenticate(self, request):
+        if "Authorization" not in request.headers:
+            return
 
-    async def authenticate(
-        self, conn: HTTPConnection
-    ) -> typing.Optional[typing.Tuple["AuthCredentials", "BaseUser"]]:
-        """Authenticate the user."""
-        return AuthCredentials(["VIEW_ALL_PROPOSALS"]), SimpleUser("somebody")
+        user_token = request.headers["Authorization"]
+        try:
+            validate_token(user_token)
+        except ValueError as exc:
+            raise AuthenticationError('Invalid user token.')
+
+        user_id = get_user_id_from_token(user_token)
+        user = await find_user_by_id(user_id)
+        username = user["username"]
+
+        return AuthCredentials(["authenticated"]), user
 
 
 async def token(request):
     return await login_user(request)
 
 
+@requires('authenticated')
 async def user(request):
-    token = request.headers["Authorization"]
-    return await find_user_by_id(111)
+    return JSONResponse(request.user)
 
 
-middleware = [Middleware(AuthenticationMiddleware, backend=FakeAuthBackend())]
+middleware = [Middleware(AuthenticationMiddleware, backend=TokenAuthentication())]
 
 schema_path = (
     pathlib.Path(__file__).parent.absolute().joinpath("graphql", "schema.graphql")

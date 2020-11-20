@@ -45,7 +45,7 @@ async def find_user_by_id(user_id: int) -> Dict:
 
     """
 
-    sql = '''
+    sql = f'''
 SELECT 
     Username,
     FirstName,
@@ -54,7 +54,7 @@ SELECT
 FROM PiptUser AS u
     JOIN Investigator AS i using (Investigator_Id)
 WHERE u.PiptUser_Id = {user_id}
-    '''.format(user_id=user_id)
+    '''
     results = await sdb_connection.fetch_all(query=sql)
     if not len(results):
         raise InvalidUsage(message="User id is not recognised", status_code=500)

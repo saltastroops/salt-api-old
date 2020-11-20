@@ -23,12 +23,44 @@ async def create_token(credentials: Dict[str, str]) -> str:
     return jwt.encode({"user_id": f"{user_id}"}, os.environ['SECRET_TOKEN_KEY'], algorithm='HS256').decode('utf-8')
 
 
-def is_valid_token(token):
-    try:
-        user = jwt.decode(token, os.environ['SECRET_TOKEN_KEY'], algorithm='HS256')
+def validate_token(token):
+    """
+    Validate the user token. If the token can not be decoded then raise and error
+    Parameters
+    ----------
+    token
 
-        if 'user_id' in user:
-            return True
+    Returns
+    -------
+
+    """
+    try:
+        user_id = jwt.decode(token, os.environ['SECRET_TOKEN_KEY'], algorithm='HS256')
+
+        if 'user_id' in user_id:
+            return
+        raise ValueError("The user token have been modifies.")
+    except Exception as e:
+        raise ValueError("Invalid user token.")
+
+
+def get_user_id_from_token(token):
+    """
+    Get the user id from the token.
+
+    Parameters
+    ----------
+    token
+
+    Returns
+    -------
+
+    """
+    try:
+        user_id = jwt.decode(token, os.environ['SECRET_TOKEN_KEY'], algorithm='HS256')
+
+        if 'user_id' in user_id:
+            return user_id["user_id"]
         return False
     except Exception as e:
         return False
