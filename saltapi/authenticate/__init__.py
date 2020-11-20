@@ -6,11 +6,11 @@ import os
 
 from starlette.responses import JSONResponse
 
-from saltapi.repository.user_repository import find_user_id_by_credentials, find_user_by_id
+from saltapi.repository.user_repository import find_user_id_by_credentials
 from saltapi.util.error import InvalidUsage
 
 
-def create_token(credentials: Dict[str, str]) -> str:
+async def create_token(credentials: Dict[str, str]) -> str:
     if credentials is None:
         raise InvalidUsage(message='Username or password not provided', status_code=400)
     try:
@@ -19,7 +19,7 @@ def create_token(credentials: Dict[str, str]) -> str:
     except KeyError:
         raise InvalidUsage(message='Username or password not provided', status_code=400)
 
-    user_id = find_user_id_by_credentials(username, password)
+    user_id = await find_user_id_by_credentials(username, password)
     return jwt.encode({"user_id": f"{user_id}"}, os.environ['SECRET_TOKEN_KEY'], algorithm='HS256').decode('utf-8')
 
 
@@ -47,7 +47,6 @@ async def login_user(request) -> JSONResponse:
     User token
     """
     body = await request.json()
-
     return JSONResponse({
-        "token": create_token(body["credentials"]),
+        "token": await create_token(body["credentials"]),
     })

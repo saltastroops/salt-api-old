@@ -1,8 +1,6 @@
 from typing import Optional, Dict
 
-import pandas as pd
-
-from saltapi.repository.database import sdb_connect
+from saltapi.repository.database import sdb_connection
 from saltapi.util.error import InvalidUsage
 
 
@@ -20,45 +18,52 @@ async def find_user_id_by_credentials(username: str, password: str) -> Optional:
     -------
     None.
     """
-    sql = """SELECT PiptUser_Id
-             FROM PiptUser
-             WHERE Username='{username}' AND Password=MD5('{password}')""" \
-        .format(username=username, password=password)
+    sql = f"""
+SELECT PiptUser_Id
+FROM PiptUser
+WHERE Username='{username}' AND Password=MD5('{password}')
+    """
 
-    conn = await sdb_connect()
-    result = pd.read_sql(sql, conn)
-    conn.close()
-    if not result.iloc[0]['PiptUser_Id']:
+    result = await sdb_connection.fetch_all(query=sql)
+    if not len(result):
         raise InvalidUsage('Username or password wrong')
 
-    return result.iloc[0]['PiptUser_Id']
+    return result[0][0]
 
 
 async def find_user_by_id(user_id: int) -> Dict:
     """
-    Query user details
+    Query user details by user id.
+
     Parameters
     ----------
     user_id
-
+        A PIPT user id
     Returns
     -------
+        The user Details
 
     """
 
     sql = '''
-    SELECT * FROM PiptUser AS u
-        JOIN Investigator AS i using (Investigator_Id)
-    WHERE u.PiptUser_Id = {user_id}
+SELECT 
+    Username,
+    FirstName,
+    Surname,
+    Email 
+FROM PiptUser AS u
+    JOIN Investigator AS i using (Investigator_Id)
+WHERE u.PiptUser_Id = {user_id}
     '''.format(user_id=user_id)
-    conn = await sdb_connect()
-    results = pd.read_sql(sql, conn)
-    conn.close()
+    results = await sdb_connection.fetch_all(query=sql)
+    if not len(results):
+        raise InvalidUsage(message="User id is not recognised", status_code=500)
 
     return {
-        "username": results["Username"][0],
-        "first_name": results["FirstName"][0],
-        "last_name": results["Surname"][0],
-        "email": results["Email"][0],
+        "username": results[0][0],
+        "first_name": results[0][1],
+        "last_name": results[0][2],
+        "email": results[0][3],
         "role": [] # Todo get user roles
     }
+

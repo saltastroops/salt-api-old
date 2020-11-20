@@ -15,6 +15,7 @@ python-dateutil = "^2.8.1"
 aiomysql = "^0.0.20"
 boolean = "^1.1.0"
 pre-commit = "^2.8.2"
+databases = "^0.4.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.2"

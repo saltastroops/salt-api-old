@@ -1,16 +1,6 @@
-import asyncio
-from aiomysql import connect
+import databases as databases
 import os
 
+SDB_URL = os.environ["SDB_DSN"]
 
-sql_config = {
-    'user': os.environ["API_USER"],
-    'host': os.environ["API_HOST"],
-    'password': os.getenv("API_PASSWORD"),
-    'db': os.getenv("API_DATABASE"),
-    'charset': 'utf8'
-}
-
-
-async def sdb_connect() -> connect:
-    return await connect(**sql_config)
+sdb_connection = databases.Database(SDB_URL)
