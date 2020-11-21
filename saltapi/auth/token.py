@@ -4,7 +4,7 @@ import os
 
 import jwt
 
-from saltapi.repository.user_repository import find_user_by_credentials
+from saltapi.repository import user_repository
 from saltapi.util.error import UsageError
 
 
@@ -21,7 +21,7 @@ async def create_token(username: str, password: str) -> str:
 
     An exception is raised if the username or password are invalid.
     """
-    user = await find_user_by_credentials(username, password)
+    user = await user_repository.find_user_by_credentials(username, password)
     if not user:
         raise ValueError("Invalid username or password.")
     return jwt.encode(
@@ -36,7 +36,9 @@ def parse_token(token: str) -> TokenPayload:
     An exception is raised if the token is invalid or expired.
     """
     try:
-        payload = jwt.decode(token, os.environ["SECRET_TOKEN_KEY"], algorithm="HS256")
+        payload = jwt.decode(
+            token, os.environ["SECRET_TOKEN_KEY"], algorithms=["HS256"]
+        )
         return TokenPayload(user_id=payload["user_id"])
     except jwt.ExpiredSignatureError:
         raise UsageError("the authentication token has expired.")

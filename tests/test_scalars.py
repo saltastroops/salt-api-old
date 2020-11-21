@@ -26,7 +26,7 @@ def test_reject_invalid_proposal_codes(proposal_code):
 
 
 @pytest.mark.parametrize(
-    "t,expected",
+    ["t", "expected"],
     [
         ("2020-04-05T04:07:09.876Z", datetime(2020, 4, 5, 4, 7, 9, 876, pytz.utc)),
         ("2021-08-06T23:13:14-07", datetime(2021, 8, 7, 6, 13, 14, 0, pytz.utc)),

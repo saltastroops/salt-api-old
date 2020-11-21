@@ -23,8 +23,8 @@ from starlette.routing import Route
 from saltapi import routes
 from saltapi.auth import parse_token
 from saltapi.graphql.directives import PermittedForDirective
+from saltapi.repository import user_repository
 from saltapi.repository.database import database
-from saltapi.repository.user_repository import User, find_user_by_id
 from saltapi.submission.resolvers import resolve_submit_proposal
 from saltapi.util.error import UsageError
 
@@ -36,7 +36,7 @@ dotenv.load_dotenv()
 class AuthenticatedUser(BaseUser):
     """An authenticated user."""
 
-    def __init__(self, user: User):
+    def __init__(self, user: user_repository.User):
         self.user = user
 
     @property
@@ -81,12 +81,12 @@ class TokenAuthenticationBackend(AuthenticationBackend):
         try:
             payload = parse_token(user_token)
         except Exception:
-            raise UsageError("Invalid or expired authentication token.")
+            raise AuthenticationError("Invalid or expired authentication token.")
 
-        user = await find_user_by_id(int(payload.user_id))
+        user = await user_repository.find_user_by_id(int(payload.user_id))
 
         if not user:
-            raise UsageError("No user found for user id.")
+            raise AuthenticationError("No user found for user id.")
 
         return AuthCredentials(["authenticated"]), AuthenticatedUser(user)
 
