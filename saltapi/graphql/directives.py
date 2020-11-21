@@ -46,7 +46,7 @@ class PermittedForDirective(SchemaDirectiveVisitor):
             if not authorized:
                 raise Exception("Not authorized.")
 
-            return original_resolver(*args, **kwargs)
+            return await original_resolver(*args, **kwargs)
 
         field.resolve = new_resolver
         return field
