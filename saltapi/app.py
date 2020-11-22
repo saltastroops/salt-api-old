@@ -22,10 +22,10 @@ from starlette.routing import Route
 
 from saltapi import routes
 from saltapi.auth import parse_token
+from saltapi.graphql import resolvers
 from saltapi.graphql.directives import PermittedForDirective
 from saltapi.repository import user_repository
 from saltapi.repository.database import database
-from saltapi.submission.resolvers import resolve_submit_proposal
 from saltapi.util.error import UsageError
 
 dotenv.load_dotenv()
@@ -136,7 +136,7 @@ schema_path = (
 type_defs = load_schema_from_path("saltapi/graphql/schema.graphql")
 
 mutation = MutationType()
-mutation.set_field("submitProposal", resolve_submit_proposal)
+mutation.set_field("submitProposal", resolvers.resolve_submit_proposal)
 
 schema = make_executable_schema(
     type_defs, mutation, directives={"permittedFor": PermittedForDirective}
