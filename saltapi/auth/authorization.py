@@ -15,7 +15,6 @@ def has_any_of_roles_or_permissions(
     user: User, auth: AuthCredentials, roles: List[str], permissions: List[str]
 ) -> bool:
     """Check whether the user has any of a list of roles and permissions."""
-    print(user, auth, roles, permissions)
     for permission in permissions:
         if permission in auth.scopes:
             return True
