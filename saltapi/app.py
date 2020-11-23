@@ -21,7 +21,7 @@ from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
 
 from saltapi import routes
-from saltapi.auth import parse_token
+from saltapi.auth.token import parse_token
 from saltapi.graphql import resolvers
 from saltapi.graphql.directives import PermittedForDirective
 from saltapi.repository import user_repository

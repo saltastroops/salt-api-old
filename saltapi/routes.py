@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
-from saltapi.auth import create_token
+from saltapi.auth.token import create_token
 from saltapi.util.error import UsageError
 
 
