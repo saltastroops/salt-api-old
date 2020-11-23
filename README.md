@@ -13,8 +13,19 @@ The following environment variables need to be defined, preferably in the `.env`
 Variable name | Description | Example
 --- | --- | ----
 DATABASE_URL | DSN for the database. | mysql://username:password@my.database.server:3306/my_database
-SECRET_TOKEN_KEY | Secret key used for signing the issued JWT tokens. | 57f0c9fa-5a08-40ec-bd28-fcb097711e7e
+HS256_SECRET_KEY | Secret key for signing and validating a JWT token using the HS256 algorithm. | 57f0c9fa-5a08-40ec-bd28-fcb097711e7e
+RS256_SECRET_KEY_FILE | File containing the secret key for signing a JWT token using the RS256 algorithm. |
+RS256_PUBLIC_KEY_FILE | File containing the public key for validating a JWT token using the RS256 algorithm. |
 STORAGE_SERVICE_URL | URL of the storage service. | https://srorage.service
+
+You ca generate a key pair for the RS256 algorithm by means of the `openssh` command.
+
+```shell script
+openssl genrsa -out rs256_key 4096
+openssl rsa -in rs256_key -pubout > rs256_key.pub
+```
+
+The paths of the generated files `rs256_key` and `rs256_key.pub`must be used as the value of the environment variable `RS256_SECRET_KEY_FILE` and `RS256_PUBLIC_KEY_FILE`, respectively.
 
 ## Running the server for development
 
