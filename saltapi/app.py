@@ -151,8 +151,14 @@ async def token(request: Request) -> Response:
     return await routes.token(request)
 
 
+async def public_key(request: Request) -> Response:
+    """Request the public key for token authentication."""
+    return await routes.public_key(request)
+
+
 non_graphql_routes = [
     Route("/token", token, methods=["POST"]),
+    Route("/public-key", public_key, methods=["GET"]),
 ]
 
 
