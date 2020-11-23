@@ -5,6 +5,9 @@ from typing import Optional
 import httpx
 from starlette.datastructures import UploadFile
 
+from saltapi.auth.token import create_token
+from saltapi.repository.user_repository import User
+
 proposal_submission_url = f"{os.environ['STORAGE_SERVICE_URL']}/proposal/submit"
 
 
@@ -21,12 +24,21 @@ async def submit_proposal(
     }
     if proposal_code:
         data["proposal_code"] = proposal_code
+    user = user = User(
+        id=-1,
+        username="admin",
+        first_name="",
+        last_name="",
+        email="",
+        roles=["Admin"],
+        permissions=[],
+    )
+    auth_token = create_token(user=user, expiry=300, algorithm="RS256")
+    headers = {"Authorization": f"Bearer {auth_token}"}
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                proposal_submission_url,
-                data=data,
-                files=files,
+                proposal_submission_url, data=data, files=files, headers=headers
             )
     except Exception:
         raise Exception(generic_error)
