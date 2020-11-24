@@ -89,9 +89,9 @@ WHERE u.PiptUser_Id = :user_id
     )
 
 
-async def is_user_pi(username:str, proposal_code:str) -> bool:
+async def is_user_pi(username: str, proposal_code: str) -> bool:
     """
-    The method checks if the user is a principal investigator of a proposal.
+    Check if the user is the Principal Investigator of a proposal.
 
     Parameters
     ----------
@@ -102,7 +102,7 @@ async def is_user_pi(username:str, proposal_code:str) -> bool:
 
     Returns
     -------
-    True if the user is a principal investigator else False
+    True if the user is The Principal Investigator else False
 
     """
     query = """
@@ -112,16 +112,16 @@ SELECT Username FROM Proposal as p
     JOIN PiptUser as pu ON pu.PiptUser_Id = prc.Leader_Id
 WHERE Proposal_Code = :proposal_code
     """
-    values ={"proposal_code": proposal_code}
+    values = {"proposal_code": proposal_code}
     result = await database.fetch_one(query=query, values=values)
     if result[0] == username:
         return True
     return False
 
 
-async def is_user_pc(username:str, proposal_code:str) -> bool:
+async def is_user_pc(username: str, proposal_code: str) -> bool:
     """
-    The method checks if the user is a principal contact of a proposal.
+    Check if the user is the Principal Contact of a proposal.
 
     Parameters
     ----------
@@ -132,7 +132,7 @@ async def is_user_pc(username:str, proposal_code:str) -> bool:
 
     Returns
     -------
-    True if the user is a principal contact else False
+    True if the user is the Principal Contact else False
 
     """
     query = """
@@ -142,7 +142,7 @@ SELECT Username FROM Proposal as p
     JOIN PiptUser as pu ON pu.PiptUser_Id = prc.Contact_Id
 WHERE Proposal_Code = :proposal_code
     """
-    values ={"proposal_code": proposal_code}
+    values = {"proposal_code": proposal_code}
     result = await database.fetch_one(query=query, values=values)
     if result[0] == username:
         return True
