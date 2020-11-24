@@ -24,7 +24,7 @@ async def submit_proposal(
     }
     if proposal_code:
         data["proposal_code"] = proposal_code
-    user = user = User(
+    user = User(
         id=-1,
         username="admin",
         first_name="",
