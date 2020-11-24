@@ -1,19 +1,20 @@
 """User roles relevant for authorization."""
-from typing import List, Any, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 from starlette.authentication import (
     AuthCredentials,
     AuthenticationBackend,
     AuthenticationError,
-    BaseUser
+    BaseUser,
 )
 from starlette.requests import HTTPConnection
 
 from saltapi.auth.token import parse_token
 from saltapi.repository import user_repository
-from saltapi.repository.user_repository import User, is_user_pi, is_user_pc
+from saltapi.repository.user_repository import User, is_user_pc, is_user_pi
 
 # authentication
+
 
 class AuthenticatedUser(BaseUser):
     """An authenticated user."""
@@ -52,9 +53,7 @@ class TokenAuthenticationBackend(AuthenticationBackend):
         if "Authorization" not in request.headers:
             if "token" == str(request.url).split("/")[-1]:
                 return None
-            raise AuthenticationError(
-                "Authorization header missing."
-            )
+            raise AuthenticationError("Authorization header missing.")
 
         authorization_header = request.headers["Authorization"]
         if not authorization_header.startswith("Bearer "):
@@ -99,6 +98,7 @@ def has_any_of_roles_or_permissions(
 
 def can_re_submit_proposal(proposal_code: str, username: str):
     """
+    Check whether a user can resubmit a proposal.
 
     Parameters
     ----------
