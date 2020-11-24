@@ -19,7 +19,6 @@ from saltapi.auth.authorization import TokenAuthenticationBackend
 from saltapi.graphql import resolvers
 from saltapi.graphql.directives import PermittedForDirective
 from saltapi.repository.database import database
-from saltapi.repository.user_repository import is_user_pi
 from saltapi.util.error import UsageError
 
 dotenv.load_dotenv()

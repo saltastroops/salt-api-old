@@ -2,7 +2,6 @@
 
 import dataclasses
 from typing import List, Optional
-from xmlrpc.client import Boolean
 
 from saltapi.repository.database import database
 
