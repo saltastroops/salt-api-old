@@ -117,9 +117,9 @@ type Subscription {
 }
 
 """
-A log level.
+A log entry type.
 """
-enum LogLevel {
+enum LogEntryType {
     ERROR
     INFO
     WARNING
@@ -130,9 +130,9 @@ A log entry for a submission.
 """
 type SubmissionLogEntry {
     """
-    The log level.
+    The log entry type.
     """
-    logLevel: LogLevel!
+    entryType: LogEntryType!
     """
     The log message.
     """
