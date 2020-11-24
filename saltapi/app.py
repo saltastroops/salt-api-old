@@ -1,6 +1,6 @@
 """The server for the SALT API."""
 import pathlib
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict
 
 import dotenv
 from ariadne import MutationType, load_schema_from_path, make_executable_schema
