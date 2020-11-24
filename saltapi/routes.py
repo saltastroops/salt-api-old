@@ -17,7 +17,7 @@ class Credentials(BaseModel):
 async def token(request: Request) -> Response:
     """Request an authentication token."""
     body = await request.json()
-    credentials = Credentials(username=body["credentials"]["username"], password=body["credentials"]["password"])
+    credentials = Credentials(**body)
 
     try:
         auth_token = await create_token(
