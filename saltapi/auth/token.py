@@ -14,7 +14,7 @@ from saltapi.util.error import UsageError
 class TokenPayload:
     """The payload of an authentication token."""
 
-    user_id: Optional[int]
+    user_id: int
     roles: List[str]
 
 

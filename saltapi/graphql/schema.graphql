@@ -62,7 +62,7 @@ type Mutation {
         The proposal code of the proposal to which this block belongs.
         """
         proposalCode: ProposalCode!
-    ): ID @permittedFor(roles: [PROPOSAL_OWNER], permissions: [VIEW_ALL_PROPOSALS])
+    ): ID @permittedFor(roles: [ADMINISTRATOR], permissions: [SUBMIT_PROPOSAL])
 
     """
     Submit a proposal.
@@ -87,7 +87,7 @@ type Mutation {
         The proposal code.
         """
         proposalCode: ProposalCode
-    ): ID @permittedFor(roles: [PROPOSAL_OWNER], permissions: [VIEW_ALL_PROPOSALS])
+    ): ID @permittedFor(roles: [ADMINISTRATOR], permissions: [SUBMIT_PROPOSAL])
 }
 
 type Subscription {
@@ -157,7 +157,7 @@ type SubmissionLogEntry {
 A user permission.
 """
 enum Permission {
-    VIEW_ALL_PROPOSALS
+    SUBMIT_PROPOSAL
 }
 
 """
@@ -168,24 +168,6 @@ enum Role {
     An administrator.
     """
     ADMINISTRATOR
-
-    """
-    The Principal Contact of a proposal;
-    """
-    PRINCIPAL_CONTACT
-
-    """
-    The Principal Investigator of a proposal.
-    """
-    PRINCIPAL_INVESTIGATOR
-
-    """
-    An owner of a proposal.
-
-    Ownership is decided by the proposal code. If there is no proposal code everyone is
-    considered an owner. This should happen for new submissions only.
-    """
-    PROPOSAL_OWNER
 }
 
 """

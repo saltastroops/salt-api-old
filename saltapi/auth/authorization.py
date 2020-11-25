@@ -1,4 +1,5 @@
 """User roles relevant for authorization."""
+import enum
 from typing import Any, List, Optional, Tuple
 
 from starlette.authentication import (
@@ -13,7 +14,35 @@ from saltapi.auth.token import parse_token
 from saltapi.repository import user_repository
 from saltapi.repository.user_repository import User, is_user_pc, is_user_pi
 
-# authentication
+
+class Permission(enum.Enum):
+    """A permission."""
+
+    SUBMIT_PROPOSAL = "SUBMIT_PROPOSAL"
+    VIEW_PROPOSAL = "VIEW_PROPOSAL"
+
+    @staticmethod
+    def from_name(name: str) -> "Permission":
+        """Return the permission for a name."""
+        for _name, member in Permission.__members__.items():
+            if _name == name:
+                return member
+        raise ValueError(f"Unknown permission: {name}")
+
+
+class Role(enum.Enum):
+    """A role."""
+
+    ADMINISTRATOR = "ADMINISTRATOR"
+
+    @staticmethod
+    def from_name(name: str) -> "Role":
+        """Return the permission for a name."""
+        for _name, member in Role.__members__.items():
+            print(_name, name)
+            if _name == name:
+                return member
+        raise ValueError(f"Unknown role: {name}")
 
 
 class AuthenticatedUser(BaseUser):
@@ -76,27 +105,38 @@ class TokenAuthenticationBackend(AuthenticationBackend):
         return AuthCredentials(["authenticated"]), AuthenticatedUser(user)
 
 
-def has_role(user: User, role: str) -> bool:
+def has_permission(
+    user: User, auth: AuthCredentials, permission: Permission, **kwargs: Any
+) -> bool:
+    """Check whether the user has a role."""
+    return False
+
+
+def has_role(user: User, auth: AuthCredentials, role: Role, **kwargs: Any) -> bool:
     """Check whether the user has a role."""
     return False
 
 
 def has_any_of_roles_or_permissions(
-    user: User, auth: AuthCredentials, roles: List[str], permissions: List[str]
+    user: User,
+    auth: AuthCredentials,
+    roles: List[Role],
+    permissions: List[Permission],
+    **kwargs: Any,
 ) -> bool:
     """Check whether the user has any of a list of roles and permissions."""
     for permission in permissions:
-        if permission in auth.scopes:
+        if has_permission(user, auth, permission, **kwargs):
             return True
 
     for role in roles:
-        if has_role(user, role):
+        if has_role(user, auth, role, **kwargs):
             return True
 
     return False
 
 
-def can_re_submit_proposal(proposal_code: str, username: str):
+def can_re_submit_proposal(proposal_code: str, username: str) -> bool:
     """
     Check whether a user can resubmit a proposal.
 
