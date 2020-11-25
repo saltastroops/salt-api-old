@@ -114,7 +114,7 @@ WHERE Proposal_Code = :proposal_code
     """
     values = {"proposal_code": proposal_code}
     result = await database.fetch_one(query=query, values=values)
-    if result[0] == username:
+    if result and result[0] == username:
         return True
     return False
 
@@ -144,6 +144,6 @@ WHERE Proposal_Code = :proposal_code
     """
     values = {"proposal_code": proposal_code}
     result = await database.fetch_one(query=query, values=values)
-    if result[0] == username:
+    if result and result[0] == username:
         return True
     return False
