@@ -11,6 +11,7 @@ from graphql import (
 )
 
 from saltapi.auth import authorization
+from saltapi.auth.authorization import Permission, Role
 
 
 class PermittedForDirective(SchemaDirectiveVisitor):
@@ -25,13 +26,15 @@ class PermittedForDirective(SchemaDirectiveVisitor):
         original_resolver = field.resolve or default_field_resolver
 
         async def new_resolver(*args: Any, **kwargs: Any) -> Any:
-            roles = self.args.get("roles")
-            permissions = self.args.get("permissions")
+            roles = [Role.from_name(r) for r in self.args.get("roles")]
+            permissions = [
+                Permission.from_name(p) for p in self.args.get("permissions")
+            ]
             user = args[1].context["request"].user
             auth = args[1].context["request"].auth
 
             if not authorization.has_any_of_roles_or_permissions(
-                user=user, auth=auth, roles=roles, permissions=permissions
+                user=user, auth=auth, roles=roles, permissions=permissions, **kwargs
             ):
                 raise Exception("Not authorized.")
 
