@@ -12,6 +12,7 @@ The following environment variables need to be defined, preferably in the `.env`
 
 Variable name | Description | Example
 --- | --- | ----
+DATABASE_TIMEZONE | Timezone used by the database | Africa/Johannesburg
 DATABASE_URL | DSN for the database. | mysql://username:password@my.database.server:3306/my_database
 HS256_SECRET_KEY | Secret key for signing and validating a JWT token using the HS256 algorithm. | 57f0c9fa-5a08-40ec-bd28-fcb097711e7e
 RS256_SECRET_KEY_FILE | File containing the secret key for signing a JWT token using the RS256 algorithm. |

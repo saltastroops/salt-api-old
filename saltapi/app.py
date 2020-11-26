@@ -3,7 +3,13 @@ import pathlib
 from typing import Any, Dict
 
 import dotenv
-from ariadne import MutationType, load_schema_from_path, make_executable_schema
+from ariadne import (
+    MutationType,
+    ScalarType,
+    SubscriptionType,
+    load_schema_from_path,
+    make_executable_schema,
+)
 from ariadne.asgi import GraphQL
 from pydantic import ValidationError
 from starlette.applications import Starlette
@@ -16,7 +22,7 @@ from starlette.routing import Route
 
 from saltapi import routes
 from saltapi.auth.authorization import TokenAuthenticationBackend
-from saltapi.graphql import resolvers
+from saltapi.graphql import resolvers, scalars
 from saltapi.graphql.directives import PermittedForDirective
 from saltapi.repository.database import database
 from saltapi.util.error import UsageError
@@ -67,11 +73,28 @@ schema_path = (
 )
 type_defs = load_schema_from_path("saltapi/graphql/schema.graphql")
 
+datetime_scalar = ScalarType("Datetime")
+datetime_scalar.set_serializer(scalars.serialize_datetime)
+datetime_scalar.set_value_parser(scalars.parse_datetime)
+
+proposal_code_scalar = ScalarType("ProposalCode")
+proposal_code_scalar.set_serializer(scalars.serialize_proposal_code)
+proposal_code_scalar.set_value_parser(scalars.parse_proposal_code)
+
 mutation = MutationType()
 mutation.set_field("submitProposal", resolvers.resolve_submit_proposal)
 
+subscription = SubscriptionType()
+subscription.set_field("submissionProgress", resolvers.resolve_submission_progress)
+subscription.set_source("submissionProgress", resolvers.submission_progress_generator)
+
 schema = make_executable_schema(
-    type_defs, mutation, directives={"permittedFor": PermittedForDirective}
+    type_defs,
+    datetime_scalar,
+    proposal_code_scalar,
+    mutation,
+    subscription,
+    directives={"permittedFor": PermittedForDirective},
 )
 
 

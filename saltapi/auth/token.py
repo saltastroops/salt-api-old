@@ -61,8 +61,6 @@ def parse_token(token: str, algorithm: str = "HS256") -> TokenPayload:
         payload = jwt.decode(token, key, algorithms=[algorithm])
         return TokenPayload(user_id=payload["user_id"], roles=payload.get("roles", []))
     except jwt.ExpiredSignatureError:
-        print("BPOM")
         raise UsageError("The authentication token has expired.")
-    except Exception as e:
-        print(e)
+    except Exception:
         raise UsageError("Invalid authentication token.")

@@ -39,7 +39,6 @@ class Role(enum.Enum):
     def from_name(name: str) -> "Role":
         """Return the permission for a name."""
         for _name, member in Role.__members__.items():
-            print(_name, name)
             if _name == name:
                 return member
         raise ValueError(f"Unknown role: {name}")
@@ -80,9 +79,7 @@ class TokenAuthenticationBackend(AuthenticationBackend):
     ) -> Optional[Tuple[AuthCredentials, BaseUser]]:
         """Authenticate the user."""
         if "Authorization" not in request.headers:
-            if "token" == str(request.url).split("/")[-1]:
-                return None
-            raise AuthenticationError("Authorization header missing.")
+            return
 
         authorization_header = request.headers["Authorization"]
         if not authorization_header.startswith("Bearer "):

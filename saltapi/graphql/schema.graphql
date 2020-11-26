@@ -87,42 +87,62 @@ type Mutation {
         The proposal code.
         """
         proposalCode: ProposalCode
-    ): ID @permittedFor(roles: [ADMINISTRATOR], permissions: [SUBMIT_PROPOSAL])
+    ): ID
 }
 
 type Subscription {
     """
-    Submission log entries.
+    Submission progress.
 
     During the submission of proposals and blocks events and messages are logged. When
     subscribing to this field, the current list of log entries is returned. Subsequently
-    the new log entries are returned.
+    the new log entries, as well as the submission status, can be queried.
 
-    A log entry includes a message, the submission status, the log level and the
-    timestamp.
+    A log entry includes a message, the message type and the timestamp.
 
     There is no guanantee that the log is still available once the submission has
     succeeded or failed.
 
-    An empty list is returned if there exists no log.
+    An empty list is returned for the log entries if there exists no log.
     """
-    submissionLog(
+    submissionProgress(
         """
         The submission id.
 
         This is the id returned by the mutations for submitting proposals or blocks.
         """
         submissionId: ID!
-    ): [SubmissionLogEntry!]!
+    ): SubmissionProgress!
 }
 
 """
 A log entry type.
 """
-enum LogEntryType {
+enum LogMessageType {
     ERROR
     INFO
     WARNING
+}
+
+"""
+The submission progress.
+
+"""
+type SubmissionProgress {
+    """
+    The submission id.
+
+    This is the id returned by the mutations for submitting proposals or blocks.
+    """
+    submissionId: ID!
+    """
+    The submission log entries (since the last progress update).
+    """
+    logEntries: [SubmissionLogEntry!]!
+    """
+    The submission status.
+    """
+    status: SubmissionStatus!
 }
 
 """
@@ -130,23 +150,13 @@ A log entry for a submission.
 """
 type SubmissionLogEntry {
     """
-    The log entry type.
+    The log message type.
     """
-    entryType: LogEntryType!
+    messageType: LogMessageType!
     """
     The log message.
     """
     message: String!
-    """
-    The submission status.
-    """
-    status: SubmissionStatus!
-    """
-    The submission id.
-
-    This is the id returned by the mutations for submitting proposals or blocks.
-    """
-    submissionId: ID!
     """
     The time when the log entry was created.
     """
