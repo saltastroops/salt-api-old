@@ -9,9 +9,12 @@ from graphql import (
     GraphQLObjectType,
     default_field_resolver,
 )
-
-from saltapi.auth import authorization
-from saltapi.auth.authorization import Permission, Role
+from saltapi.auth.authorization import (
+    Permission,
+    Role,
+    can_submit_proposal,
+    has_any_of_roles_or_permissions
+)
 
 
 class PermittedForDirective(SchemaDirectiveVisitor):
@@ -33,7 +36,14 @@ class PermittedForDirective(SchemaDirectiveVisitor):
             user = args[1].context["request"].user
             auth = args[1].context["request"].auth
 
-            if not authorization.has_any_of_roles_or_permissions(
+            proposal_code = kwargs["proposalCode"] if "proposalCode" in kwargs else None
+            if (
+                    (args[1].path.key == "submitProposal" or args[1].path.key == "submitBlock")
+                    and can_submit_proposal(user.username, proposal_code)
+            ):
+                return await original_resolver(*args, **kwargs)
+
+            if not has_any_of_roles_or_permissions(
                 user=user, auth=auth, roles=roles, permissions=permissions, **kwargs
             ):
                 raise Exception("Not authorized.")

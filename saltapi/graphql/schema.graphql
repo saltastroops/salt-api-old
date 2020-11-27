@@ -87,7 +87,7 @@ type Mutation {
         The proposal code.
         """
         proposalCode: ProposalCode
-    ): ID
+    ): ID @permittedFor(roles: [ADMINISTRATOR], permissions: [SUBMIT_PROPOSAL])
 }
 
 type Subscription {

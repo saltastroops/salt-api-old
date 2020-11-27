@@ -133,9 +133,9 @@ def has_any_of_roles_or_permissions(
     return False
 
 
-def can_re_submit_proposal(proposal_code: str, username: str) -> bool:
+def can_submit_proposal(username: str, proposal_code: Optional[str] = None) -> bool:
     """
-    Check whether a user can resubmit a proposal.
+    Check whether a user can submit a proposal.
 
     Parameters
     ----------
@@ -150,8 +150,10 @@ def can_re_submit_proposal(proposal_code: str, username: str) -> bool:
         If the the user can re submit the proposal.
 
     """
-    if is_user_pi(username, proposal_code):
+    if not proposal_code:  # Might be a new proposal
         return True
-    if is_user_pc(username, proposal_code):
+    if is_user_pi(username, proposal_code):  # User is a principal investigator
+        return True
+    if is_user_pc(username, proposal_code):  # User is a proposal contact
         return True
     return False
