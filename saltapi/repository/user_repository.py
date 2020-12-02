@@ -15,7 +15,6 @@ class User:
     first_name: str
     last_name: str
     email: str
-    roles: List[str]
     permissions: List[str]
 
 
@@ -84,7 +83,6 @@ WHERE u.PiptUser_Id = :user_id
         first_name=result[1],
         last_name=result[2],
         email=result[3],
-        roles=[],  # TODO: get user roles
         permissions=[],  # TODO: get user permissions
     )
 
@@ -147,3 +145,26 @@ WHERE Proposal_Code = :proposal_code
     if result and result[0] == username:
         return True
     return False
+
+
+async def is_user_verified(username: str) -> bool:
+    """
+    Check if the user is the Principal Contact of a proposal.
+
+    Parameters
+    ----------
+    username
+        The PIPT username
+
+    Returns
+    -------
+    True if the user is the user is verified
+
+    """
+    query = """
+Query to check if user is verifies
+    """
+    values = {"username": username}
+    # result = await database.fetch_one(query=query, values=values)
+
+    return True

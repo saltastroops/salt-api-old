@@ -5,6 +5,7 @@ from typing import Any, Optional
 from ariadne import convert_kwargs_to_snake_case
 from starlette.datastructures import UploadFile
 
+from saltapi.auth.authorization import can_submit_proposal
 from saltapi.repository.submission_repository import (
     SubmissionStatus,
     find_submission_log_entries,
@@ -23,10 +24,13 @@ async def resolve_submit_proposal(
     root: Any, info: Any, proposal: UploadFile, proposal_code: Optional[str] = None
 ) -> str:
     """Submit a proposal."""
+    user = info.context["request"].user
+    can_submit_proposal(user.username, proposal_code)
+
     return await submit_proposal(
         proposal=proposal,
         proposal_code=proposal_code,
-        submitter=username(info),
+        user=user,
     )
 
 

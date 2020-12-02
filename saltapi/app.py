@@ -93,8 +93,7 @@ schema = make_executable_schema(
     datetime_scalar,
     proposal_code_scalar,
     mutation,
-    subscription,
-    directives={"permittedFor": PermittedForDirective},
+    subscription
 )
 
 

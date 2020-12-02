@@ -62,7 +62,7 @@ type Mutation {
         The proposal code of the proposal to which this block belongs.
         """
         proposalCode: ProposalCode!
-    ): ID @permittedFor(roles: [ADMINISTRATOR], permissions: [SUBMIT_PROPOSAL])
+    ): ID
 
     """
     Submit a proposal.
@@ -87,7 +87,7 @@ type Mutation {
         The proposal code.
         """
         proposalCode: ProposalCode
-    ): ID @permittedFor(roles: [ADMINISTRATOR], permissions: [SUBMIT_PROPOSAL])
+    ): ID
 }
 
 type Subscription {

@@ -12,7 +12,7 @@ from starlette.requests import HTTPConnection
 
 from saltapi.auth.token import parse_token
 from saltapi.repository import user_repository
-from saltapi.repository.user_repository import User, is_user_pc, is_user_pi
+from saltapi.repository.user_repository import User, is_user_pc, is_user_pi, is_user_verified
 
 
 class Permission(enum.Enum):
@@ -102,38 +102,14 @@ class TokenAuthenticationBackend(AuthenticationBackend):
         return AuthCredentials(["authenticated"]), AuthenticatedUser(user)
 
 
-def has_permission(
-    user: User, auth: AuthCredentials, permission: Permission, **kwargs: Any
-) -> bool:
+def has_permission(user: User, permission: Permission) -> bool:
     """Check whether the user has a role."""
+    if permission in user.permissions:
+        return True
     return False
 
 
-def has_role(user: User, auth: AuthCredentials, role: Role, **kwargs: Any) -> bool:
-    """Check whether the user has a role."""
-    return False
-
-
-def has_any_of_roles_or_permissions(
-    user: User,
-    auth: AuthCredentials,
-    roles: List[Role],
-    permissions: List[Permission],
-    **kwargs: Any,
-) -> bool:
-    """Check whether the user has any of a list of roles and permissions."""
-    for permission in permissions:
-        if has_permission(user, auth, permission, **kwargs):
-            return True
-
-    for role in roles:
-        if has_role(user, auth, role, **kwargs):
-            return True
-
-    return False
-
-
-def can_submit_proposal(username: str, proposal_code: Optional[str] = None) -> bool:
+def can_submit_proposal(username: str, proposal_code: Optional[str] = None) -> None:
     """
     Check whether a user can submit a proposal.
 
@@ -150,10 +126,12 @@ def can_submit_proposal(username: str, proposal_code: Optional[str] = None) -> b
         If the the user can re submit the proposal.
 
     """
+    if not is_user_verified:
+        raise Exception("User not verified.")
     if not proposal_code:  # Might be a new proposal
-        return True
+        return
     if is_user_pi(username, proposal_code):  # User is a principal investigator
-        return True
-    if is_user_pc(username, proposal_code):  # User is a proposal contact
-        return True
-    return False
+        return
+    if is_user_pc(username, proposal_code):  # User is a principal contact
+        return
+    raise Exception("User do not own the proposal.")

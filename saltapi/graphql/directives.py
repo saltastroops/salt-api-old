@@ -13,7 +13,7 @@ from saltapi.auth.authorization import (
     Permission,
     Role,
     can_submit_proposal,
-    has_any_of_roles_or_permissions
+    has_permission
 )
 
 
@@ -43,9 +43,7 @@ class PermittedForDirective(SchemaDirectiveVisitor):
             ):
                 return await original_resolver(*args, **kwargs)
 
-            if not has_any_of_roles_or_permissions(
-                user=user, auth=auth, roles=roles, permissions=permissions, **kwargs
-            ):
+            if not has_permission(user=user, permission=permissions):
                 raise Exception("Not authorized.")
 
             return await original_resolver(*args, **kwargs)
