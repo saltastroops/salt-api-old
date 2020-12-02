@@ -24,7 +24,14 @@ async def submit_proposal(
     }
     if proposal_code:
         data["proposal_code"] = proposal_code
-
+    user = User(
+        id=-1,
+        username="admin",
+        first_name="",
+        last_name="",
+        email="",
+        permissions=[],
+    )
     auth_token = create_token(user=user, expiry=300, algorithm="RS256")
     headers = {"Authorization": f"Bearer {auth_token}"}
     try:

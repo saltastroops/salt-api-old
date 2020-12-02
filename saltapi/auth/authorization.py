@@ -109,7 +109,7 @@ def has_permission(user: User, permission: Permission) -> bool:
     return False
 
 
-def can_submit_proposal(username: str, proposal_code: Optional[str] = None) -> None:
+def can_submit_proposal(user: User, proposal_code: Optional[str] = None) -> None:
     """
     Check whether a user can submit a proposal.
 
@@ -127,11 +127,11 @@ def can_submit_proposal(username: str, proposal_code: Optional[str] = None) -> N
 
     """
     if not is_user_verified:
-        raise Exception("User not verified.")
-    if not proposal_code:  # Might be a new proposal
+        raise Exception("User not verified.8")
+    if not proposal_code:  # Is a new proposal
         return
-    if is_user_pi(username, proposal_code):  # User is a principal investigator
+    if is_user_pi(user.username, proposal_code):  # User is a principal investigator
         return
-    if is_user_pc(username, proposal_code):  # User is a principal contact
+    if is_user_pc(user.username, proposal_code):  # User is a principal contact
         return
-    raise Exception("User do not own the proposal.")
+    raise Exception("Only the Principal Investigator and Principal Contact may resubmit a proposal.")

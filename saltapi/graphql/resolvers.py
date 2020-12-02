@@ -30,7 +30,7 @@ async def resolve_submit_proposal(
     return await submit_proposal(
         proposal=proposal,
         proposal_code=proposal_code,
-        user=user,
+        submitter=user,
     )
 
 
