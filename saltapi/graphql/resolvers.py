@@ -25,12 +25,12 @@ async def resolve_submit_proposal(
 ) -> str:
     """Submit a proposal."""
     user = info.context["request"].user
-    can_submit_proposal(user.username, proposal_code)
+    can_submit_proposal(user, proposal_code)
 
     return await submit_proposal(
         proposal=proposal,
         proposal_code=proposal_code,
-        submitter=user,
+        user=user,
     )
 
 

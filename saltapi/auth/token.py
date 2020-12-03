@@ -29,7 +29,7 @@ def create_token(
 
     The algorithm must be HS256 or RS256.
     """
-    payload = {"user_id": user.id}
+    payload = {"user_id": user.id, "roles": user.roles}
     if expiry:
         payload["exp"] = time() + expiry
     if algorithm == "HS256":

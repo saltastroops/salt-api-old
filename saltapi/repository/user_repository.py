@@ -1,9 +1,39 @@
 """Access user  details from the database."""
 
 import dataclasses
+import enum
 from typing import List, Optional
 
 from saltapi.repository.database import database
+
+
+class Permission(enum.Enum):
+    """A permission."""
+
+    SUBMIT_PROPOSAL = "SUBMIT_PROPOSAL"
+    VIEW_PROPOSAL = "VIEW_PROPOSAL"
+
+    @staticmethod
+    def from_name(name: str) -> "Permission":
+        """Return the permission for a name."""
+        for _name, member in Permission.__members__.items():
+            if _name == name:
+                return member
+        raise ValueError(f"Unknown permission: {name}")
+
+
+class Role(enum.Enum):
+    """A role."""
+
+    ADMINISTRATOR = "ADMINISTRATOR"
+
+    @staticmethod
+    def from_name(name: str) -> "Role":
+        """Return the permission for a name."""
+        for _name, member in Role.__members__.items():
+            if _name == name:
+                return member
+        raise ValueError(f"Unknown role: {name}")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -15,7 +45,16 @@ class User:
     first_name: str
     last_name: str
     email: str
-    permissions: List[str]
+    roles:List[Role]
+    permissions: List[Permission]
+
+    def has_permission(self, permission: Permission) -> bool:
+        """Check whether the user has a permission."""
+        return permission in self.permissions
+
+    def has_role(self, role: Role) -> bool:
+        """Check whether the user has a role."""
+        return role in self.roles
 
 
 async def find_user_by_credentials(username: str, password: str) -> Optional[User]:
@@ -83,6 +122,7 @@ WHERE u.PiptUser_Id = :user_id
         first_name=result[1],
         last_name=result[2],
         email=result[3],
+        roles=[], # TODO: get user permissions
         permissions=[],  # TODO: get user permissions
     )
 
@@ -145,26 +185,3 @@ WHERE Proposal_Code = :proposal_code
     if result and result[0] == username:
         return True
     return False
-
-
-async def is_user_verified(username: str) -> bool:
-    """
-    Check if the user is the Principal Contact of a proposal.
-
-    Parameters
-    ----------
-    username
-        The PIPT username
-
-    Returns
-    -------
-    True if the user is the user is verified
-
-    """
-    query = """
-Query to check if user is verifies
-    """
-    values = {"username": username}
-    # result = await database.fetch_one(query=query, values=values)
-
-    return True

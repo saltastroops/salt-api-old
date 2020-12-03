@@ -23,7 +23,7 @@ from starlette.routing import Route
 from saltapi import routes
 from saltapi.auth.authorization import TokenAuthenticationBackend
 from saltapi.graphql import resolvers, scalars
-from saltapi.graphql.directives import PermittedForDirective
+from saltapi.graphql.directives import IsAuthenticatedDirective
 from saltapi.repository.database import database
 from saltapi.util.error import UsageError
 
@@ -93,7 +93,8 @@ schema = make_executable_schema(
     datetime_scalar,
     proposal_code_scalar,
     mutation,
-    subscription
+    subscription,
+    directives={"isAuthenticated": IsAuthenticatedDirective},
 )
 
 

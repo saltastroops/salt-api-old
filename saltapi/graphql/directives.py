@@ -9,16 +9,10 @@ from graphql import (
     GraphQLObjectType,
     default_field_resolver,
 )
-from saltapi.auth.authorization import (
-    Permission,
-    Role,
-    can_submit_proposal,
-    has_permission
-)
 
 
-class PermittedForDirective(SchemaDirectiveVisitor):
-    """Directive for handling permissions."""
+class IsAuthenticatedDirective(SchemaDirectiveVisitor):
+    """Directive for checking if user is authenticated."""
 
     def visit_field_definition(
         self,
@@ -29,22 +23,10 @@ class PermittedForDirective(SchemaDirectiveVisitor):
         original_resolver = field.resolve or default_field_resolver
 
         async def new_resolver(*args: Any, **kwargs: Any) -> Any:
-            roles = [Role.from_name(r) for r in self.args.get("roles")]
-            permissions = [
-                Permission.from_name(p) for p in self.args.get("permissions")
-            ]
-            user = args[1].context["request"].user
+
             auth = args[1].context["request"].auth
-
-            proposal_code = kwargs["proposalCode"] if "proposalCode" in kwargs else None
-            if (
-                    (args[1].path.key == "submitProposal" or args[1].path.key == "submitBlock")
-                    and can_submit_proposal(user.username, proposal_code)
-            ):
-                return await original_resolver(*args, **kwargs)
-
-            if not has_permission(user=user, permission=permissions):
-                raise Exception("Not authorized.")
+            if "authenticated" not in auth.scopes:
+                raise Exception("User is not authenticated.")
 
             return await original_resolver(*args, **kwargs)
 
