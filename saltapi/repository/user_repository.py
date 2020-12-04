@@ -36,7 +36,43 @@ class Role(enum.Enum):
         raise ValueError(f"Unknown role: {name}")
 
 
-@dataclasses.dataclass(frozen=True)
+class UserPermissions:
+    """User permissions."""
+
+    def __init__(self, user: "User") -> None:
+        self.user = user
+
+    async def submit_proposal(self, proposal_code: Optional[str]) -> bool:
+        """Check whether the user can submit a proposal."""
+        if not self.user.has_permission(Permission.SUBMIT_PROPOSAL):
+            return False
+        if not proposal_code:  # Is a new proposal
+            return True
+        if await self.user.has_role_of.pc(
+            proposal_code
+        ):  # User is a principal investigator
+            return True
+        if await self.user.has_role_of.pc(proposal_code):  # User is a principal contact
+            return True
+        return False
+
+
+class UserRoles:
+    """User roles."""
+
+    def __init__(self, user: "User"):
+        self.user = user
+
+    async def pi(self, proposal_code: str) -> bool:
+        """Check whether the user is a Principal Investigator."""
+        return await _is_user_pi(self.user.username, proposal_code)
+
+    async def pc(self, proposal_code: str) -> bool:
+        """Check whether the user is a Principal Contact."""
+        return await _is_user_pc(self.user.username, proposal_code)
+
+
+@dataclasses.dataclass()
 class User:
     """A SALT user."""
 
@@ -45,8 +81,13 @@ class User:
     first_name: str
     last_name: str
     email: str
-    roles:List[Role]
+    roles: List[Role]
     permissions: List[Permission]
+
+    def __post_init__(self) -> None:
+        """Initialise roles abd permissions."""
+        self.is_permitted_to = UserPermissions(self)
+        self.has_role_of = UserRoles(self)
 
     def has_permission(self, permission: Permission) -> bool:
         """Check whether the user has a permission."""
@@ -122,12 +163,12 @@ WHERE u.PiptUser_Id = :user_id
         first_name=result[1],
         last_name=result[2],
         email=result[3],
-        roles=[], # TODO: get user permissions
+        roles=[],  # TODO: get user permissions
         permissions=[],  # TODO: get user permissions
     )
 
 
-async def is_user_pi(username: str, proposal_code: str) -> bool:
+async def _is_user_pi(username: str, proposal_code: str) -> bool:
     """
     Check if the user is the Principal Investigator of a proposal.
 
@@ -157,7 +198,7 @@ WHERE Proposal_Code = :proposal_code
     return False
 
 
-async def is_user_pc(username: str, proposal_code: str) -> bool:
+async def _is_user_pc(username: str, proposal_code: str) -> bool:
     """
     Check if the user is the Principal Contact of a proposal.
 

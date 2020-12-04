@@ -23,7 +23,6 @@ async def mock_find_user_by_credentials(username: str, password: str) -> Optiona
             email="jane@example.com",
             roles=[],
             permissions=[],
-            is_authenticated=True
         )
     else:
         return None
@@ -40,7 +39,6 @@ async def mock_find_user_by_id(user_id: int) -> Optional[User]:
             email="jane@example.com",
             roles=[],
             permissions=[],
-            is_authenticated=True
         )
     else:
         return None

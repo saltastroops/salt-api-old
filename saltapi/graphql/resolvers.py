@@ -5,12 +5,12 @@ from typing import Any, Optional
 from ariadne import convert_kwargs_to_snake_case
 from starlette.datastructures import UploadFile
 
-from saltapi.auth.authorization import can_submit_proposal
 from saltapi.repository.submission_repository import (
     SubmissionStatus,
     find_submission_log_entries,
     find_submission_status,
 )
+from saltapi.repository.user_repository import User
 from saltapi.submission.submit import submit_proposal
 
 
@@ -24,8 +24,9 @@ async def resolve_submit_proposal(
     root: Any, info: Any, proposal: UploadFile, proposal_code: Optional[str] = None
 ) -> str:
     """Submit a proposal."""
-    user = info.context["request"].user
-    can_submit_proposal(user, proposal_code)
+    user: User = info.context["request"].user
+    if not await user.is_permitted_to.submit_proposal(proposal_code):
+        raise Exception("You are not allowed to submit this proposal.")
 
     return await submit_proposal(
         proposal=proposal,
@@ -35,7 +36,9 @@ async def resolve_submit_proposal(
 
 
 @convert_kwargs_to_snake_case
-async def submission_progress_generator(root: Any, info: Any, submission_id: str):
+async def submission_progress_generator(
+    root: Any, info: Any, submission_id: str
+) -> Any:
     """Generate content for the submission progress resolver."""
     latest_entry_number = 0
     previous_status: Optional[SubmissionStatus] = None
@@ -75,6 +78,6 @@ async def submission_progress_generator(root: Any, info: Any, submission_id: str
 
 
 @convert_kwargs_to_snake_case
-def resolve_submission_progress(progress: Any, info: Any, submission_id: str):
+def resolve_submission_progress(progress: Any, info: Any, submission_id: str) -> Any:
     """Return the progress details."""
     return progress

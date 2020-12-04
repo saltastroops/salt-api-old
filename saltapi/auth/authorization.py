@@ -1,6 +1,5 @@
 """User roles relevant for authorization."""
-import enum
-from typing import Any, List, Optional, Tuple
+from typing import Any, Optional, Tuple
 
 from starlette.authentication import (
     AuthCredentials,
@@ -12,7 +11,6 @@ from starlette.requests import HTTPConnection
 
 from saltapi.auth.token import parse_token
 from saltapi.repository import user_repository
-from saltapi.repository.user_repository import User, is_user_pc, is_user_pi, Permission
 
 
 class AuthenticatedUser(BaseUser):
@@ -50,7 +48,7 @@ class TokenAuthenticationBackend(AuthenticationBackend):
     ) -> Optional[Tuple[AuthCredentials, BaseUser]]:
         """Authenticate the user."""
         if "Authorization" not in request.headers:
-            return
+            return None
 
         authorization_header = request.headers["Authorization"]
         if not authorization_header.startswith("Bearer "):
@@ -71,32 +69,3 @@ class TokenAuthenticationBackend(AuthenticationBackend):
             raise AuthenticationError("No user found for user id.")
 
         return AuthCredentials(["authenticated"]), AuthenticatedUser(user)
-
-
-def can_submit_proposal(user: User, proposal_code: Optional[str] = None) -> bool:
-    """
-    Check whether a user can submit a proposal.
-
-    Parameters
-    ----------
-    proposal_code
-        The proposal code
-    username
-        The PIPT username
-
-    Returns
-    -------
-    True
-        If the the user can re submit the proposal.
-
-    """
-
-    if not user.has_permission(Permission.SUBMIT_PROPOSAL):
-        return False
-    if not proposal_code:  # Is a new proposal
-        return True
-    if is_user_pi(user.username, proposal_code):  # User is a principal investigator
-        return True
-    if is_user_pc(user.username, proposal_code):  # User is a principal contact
-        return True
-    return False

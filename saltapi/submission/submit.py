@@ -31,7 +31,7 @@ async def submit_proposal(
         last_name="",
         email="",
         roles=[],
-        permissions=[]
+        permissions=[],
     )
     auth_token = create_token(user=user, expiry=300, algorithm="RS256")
     headers = {"Authorization": f"Bearer {auth_token}"}
