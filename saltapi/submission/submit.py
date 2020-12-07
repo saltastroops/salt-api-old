@@ -7,6 +7,20 @@ from starlette.datastructures import UploadFile
 
 from saltapi.auth.token import create_token
 from saltapi.repository.user_repository import User
+import logging
+from saltapi.repository.logging_errors import setup_logging
+import sys
+
+info_log = setup_logging(
+    "info_logger",
+    "saltapi_info.log",
+    logging.Formatter("%(asctime)s [%(levelname)s]:[%(filename)s, line %(lineno)d]. %(message)s."),
+)
+error_log = setup_logging(
+    "error_logger",
+    "saltapi_error.log",
+    logging.Formatter("%(asctime)s [%(levelname)s]:[%(filename)s, line %(lineno)d]. %(message)s."),
+)
 
 proposal_submission_url = f"{os.environ['STORAGE_SERVICE_URL']}/proposal/submit"
 
@@ -41,6 +55,8 @@ async def submit_proposal(
                 proposal_submission_url, data=data, files=files, headers=headers
             )
     except Exception:
+        exc_type, value, traceback = sys.exc_info()
+        error_log.error(msg=f"Failed with exception{exc_type.__name__}. {generic_error}")
         raise Exception(generic_error)
     submission_id = _submission_id(response)
     if submission_id:
@@ -49,8 +65,12 @@ async def submit_proposal(
     # error handling
     error = _submission_error(response)
     if error:
+        exc_type, value, traceback = sys.exc_info()
+        error_log.error(msg=f"Failed with exception{exc_type.__name__}. {error}")
         raise Exception(error)
     else:
+        exc_type, value, traceback = sys.exc_info()
+        error_log.error(msg=f"Failed with exception{exc_type.__name__}. {generic_error}")
         raise Exception(generic_error)
 
 

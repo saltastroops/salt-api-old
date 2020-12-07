@@ -1,7 +1,9 @@
 """User roles relevant for authorization."""
 import enum
 from typing import Any, List, Optional, Tuple
-
+from saltapi.repository.logging_errors import setup_logging
+import logging
+import sys
 from starlette.authentication import (
     AuthCredentials,
     AuthenticationBackend,
@@ -13,6 +15,18 @@ from starlette.requests import HTTPConnection
 from saltapi.auth.token import parse_token
 from saltapi.repository import user_repository
 from saltapi.repository.user_repository import User, is_user_pc, is_user_pi
+
+info_log = setup_logging(
+    "info_logger",
+    "saltapi_info.log",
+    logging.Formatter("%(asctime)s [%(levelname)s]:[%(filename)s, line %(lineno)d]. %(message)s.", '%Y/%m/%d %H:%M:%S'),
+)
+error_log = setup_logging(
+    "error_logger",
+    "saltapi_error.log",
+    logging.Formatter("%(asctime)s [%(levelname)s]:[%(filename)s, line %(lineno)d]. %(message)s.",
+                      '%Y/%m/%d %H:%M:%S'),
+)
 
 
 class Permission(enum.Enum):
@@ -27,6 +41,7 @@ class Permission(enum.Enum):
         for _name, member in Permission.__members__.items():
             if _name == name:
                 return member
+        info_log.info(msg=f"Unknown permission detected from: {name}")
         raise ValueError(f"Unknown permission: {name}")
 
 
@@ -41,6 +56,7 @@ class Role(enum.Enum):
         for _name, member in Role.__members__.items():
             if _name == name:
                 return member
+        info_log.info(msg=f"Unknown role detected for {name}")
         raise ValueError(f"Unknown role: {name}")
 
 
@@ -83,6 +99,7 @@ class TokenAuthenticationBackend(AuthenticationBackend):
 
         authorization_header = request.headers["Authorization"]
         if not authorization_header.startswith("Bearer "):
+            error_log.error(msg=f"Invalid Authorization header value. The header value must have the format Bearer")
             raise AuthenticationError(
                 "Invalid Authorization header value. The header "
                 "value must have the format Bearer <token>."
@@ -92,11 +109,14 @@ class TokenAuthenticationBackend(AuthenticationBackend):
         try:
             payload = parse_token(user_token)
         except Exception:
+            exc_type, value, traceback = sys.exc_info()
+            error_log.error(msg=f"failed with exception{exc_type.__name__}. Invalid or expired authentication token.")
             raise AuthenticationError("Invalid or expired authentication token.")
 
         user = await user_repository.find_user_by_id(int(payload.user_id))
 
         if not user:
+            error_log.error(msg=f"No user id was found for {user}")
             raise AuthenticationError("No user found for user id.")
 
         return AuthCredentials(["authenticated"]), AuthenticatedUser(user)

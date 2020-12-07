@@ -4,10 +4,24 @@ import enum
 import os
 from datetime import datetime
 from typing import List
-
+import logging
+from saltapi.repository.logging_errors import setup_logging
 from pytz import timezone
 
 from saltapi.repository.database import database
+
+logging.root.setLevel(logging.INFO)
+
+info_log = setup_logging(
+    "info_logger",
+    "saltapi_info.log",
+    logging.Formatter("%(asctime)s [%(levelname)s]:[%(filename)s, line %(lineno)d]. %(message)s."),
+)
+error_log = setup_logging(
+    "error_logger",
+    "saltapi_error.log",
+    logging.Formatter("%(asctime)s [%(levelname)s]:[%(module)s, %(lineno)d]. %(message)s."),
+)
 
 
 class SubmissionStatus(enum.Enum):
@@ -23,6 +37,7 @@ class SubmissionStatus(enum.Enum):
         for status in SubmissionStatus:
             if status.value == value:
                 return status
+        info_log.info(msg=f"Unknown submission status value: {value}")
         raise ValueError(f"Unknown submission status value: {value}")
 
 
@@ -39,6 +54,7 @@ class LogMessageType(enum.Enum):
         for lmt in LogMessageType:
             if lmt.value == value:
                 return lmt
+        info_log.info(msg=f"Unknown log message type value: {value}")
         raise ValueError(f"Unknown log message type value: {value}")
 
 
@@ -64,6 +80,9 @@ WHERE s.Identifier = :identifier
     values = {"identifier": submission_identifier}
     row = await database.fetch_one(query=query, values=values)
     if not row:
+        error_log.error(
+            msg=f"Unknown submission identifier has been given :{submission_identifier}"
+        )
         raise ValueError(f"Unknown submission identifier: {submission_identifier}")
     return SubmissionStatus.from_value(row[0])
 
