@@ -7,30 +7,41 @@ from typing import List, Optional
 from saltapi.repository.database import database
 
 
-class Permission(enum.Enum):
+class GlobalPermission(enum.Enum):
     """A permission."""
 
     SUBMIT_PROPOSAL = "SUBMIT_PROPOSAL"
+    SUBMIT_ANY_PROPOSAL = "SUBMIT_ANY_PROPOSAL"
     VIEW_PROPOSAL = "VIEW_PROPOSAL"
+    VIEW_ANY_PROPOSAL = "VIEW_ANY_PROPOSAL"
+    UPDATE_PROPOSAL = "UPDATE_PROPOSAL"
+    UPDATE_ANY_PROPOSAL = "UPDATE_ANY_PROPOSAL"
+    VIEW_USERS_DETAILS = "VIEW_USERS_DETAILS"
+    UPDATE_USERS_DETAILS = "UPDATE_USERS_DETAILS"
+    UPDATE_PERMISSIONS = "UPDATE_PERMISSIONS"
+    CREATE_PERMISSIONS = "CREATE_PERMISSIONS"
+    VIEW_PERMISSIONS = "VIEW_PERMISSIONS"
 
     @staticmethod
-    def from_name(name: str) -> "Permission":
+    def from_name(name: str) -> "GlobalPermission":
         """Return the permission for a name."""
-        for _name, member in Permission.__members__.items():
+        for _name, member in GlobalPermission.__members__.items():
             if _name == name:
                 return member
         raise ValueError(f"Unknown permission: {name}")
 
 
-class Role(enum.Enum):
+class GlobalRole(enum.Enum):
     """A role."""
 
     ADMINISTRATOR = "ADMINISTRATOR"
+    SALT_ASTRONOMER = "SALT_ASTRONOMER"
+    SALT_OPERATOR = "SALT_OPERATOR"
 
     @staticmethod
-    def from_name(name: str) -> "Role":
+    def from_name(name: str) -> "GlobalRole":
         """Return the permission for a name."""
-        for _name, member in Role.__members__.items():
+        for _name, member in GlobalRole.__members__.items():
             if _name == name:
                 return member
         raise ValueError(f"Unknown role: {name}")
@@ -44,15 +55,22 @@ class UserPermissions:
 
     async def submit_proposal(self, proposal_code: Optional[str]) -> bool:
         """Check whether the user can submit a proposal."""
-        if not self.user.has_permission(Permission.SUBMIT_PROPOSAL):
-            return False
+        if self.user.has_permission(GlobalPermission.SUBMIT_ANY_PROPOSAL):
+            return True
         if not proposal_code:  # Is a new proposal
             return True
-        if await self.user.has_role_of.pc(
+        if await self.user.has_role_of.pi(
             proposal_code
         ):  # User is a principal investigator
             return True
         if await self.user.has_role_of.pc(proposal_code):  # User is a principal contact
+            return True
+        return False
+
+    async def view_proposal(self, proposal_code) -> bool:
+        if self.submit_proposal(proposal_code):
+            return True
+        if _is_proposal_investigator(self.user, proposal_code):
             return True
         return False
 
@@ -81,21 +99,107 @@ class User:
     first_name: str
     last_name: str
     email: str
-    roles: List[Role]
-    permissions: List[Permission]
+    roles: List[GlobalRole]
+    permissions: List[GlobalPermission]
 
     def __post_init__(self) -> None:
         """Initialise roles abd permissions."""
         self.is_permitted_to = UserPermissions(self)
         self.has_role_of = UserRoles(self)
 
-    def has_permission(self, permission: Permission) -> bool:
+    def has_permission(self, permission: GlobalPermission) -> bool:
         """Check whether the user has a permission."""
         return permission in self.permissions
 
-    def has_role(self, role: Role) -> bool:
+    def has_role(self, role: GlobalRole) -> bool:
         """Check whether the user has a role."""
         return role in self.roles
+
+
+async def find_user_roles(user_id: int) -> List[GlobalRole]:
+    """
+    Check for the user roles.
+
+    Parameters
+    ----------
+    user_id
+        The PIPT user id
+
+    Returns
+    -------
+    The user roles
+
+    """
+    query = """
+SELECT PiptSetting_Id, `Value`
+FROM PiptUserSetting
+WHERE PiptUser_Id = :user_id
+        """
+    values = {"user_id": user_id}
+    results = await database.fetch_all(query=query, values=values)
+    user_roles: List[GlobalRole] = []
+    if results:
+        for row in results:
+            if row[0] == 22 and row[1] == 2:
+                user_roles.append(GlobalRole.ADMINISTRATOR)
+            if row[0] == 21 and row[1] == 1:
+                user_roles.append(GlobalRole.SALT_ASTRONOMER)
+            if row[0] == 23 and row[1] == 1:
+                user_roles.append(GlobalRole.SALT_OPERATOR)
+    return user_roles
+
+
+async def find_user_permissions(user_id: int) -> List[GlobalPermission]:
+    """
+    Check for the user permissions.
+
+    Parameters
+    ----------
+    user_id
+        The PIPT user id
+
+    Returns
+    -------
+    The user permissions
+
+    """
+    query = """
+    SELECT PiptSetting_Id, `Value`
+    FROM PiptUserSetting
+    WHERE PiptUser_Id = :user_id
+            """
+    values = {"user_id": user_id}
+    results = await database.fetch_all(query=query, values=values)
+    user_permissions = []
+    if results:
+        for row in results:
+            if row[0] == 22 and row[1] == 2:
+                admin_defaults = [
+                    GlobalPermission.UPDATE_ANY_PROPOSAL,
+                    GlobalPermission.VIEW_ANY_PROPOSAL,
+                    GlobalPermission.SUBMIT_ANY_PROPOSAL,
+                    GlobalPermission.VIEW_PERMISSIONS,
+                    GlobalPermission.UPDATE_PERMISSIONS,
+                    GlobalPermission.CREATE_PERMISSIONS,
+                    GlobalPermission.VIEW_USERS_DETAILS,
+                    GlobalPermission.UPDATE_USERS_DETAILS
+                ]
+                user_permissions += admin_defaults
+            if row[0] == 21 and row[1] == 1:
+                sa_defaults = [
+                    GlobalPermission.UPDATE_ANY_PROPOSAL,
+                    GlobalPermission.VIEW_ANY_PROPOSAL,
+                    GlobalPermission.SUBMIT_ANY_PROPOSAL,
+                    GlobalPermission.VIEW_USERS_DETAILS
+                ]
+                user_permissions += sa_defaults
+            if row[0] == 23 and row[1] == 1:
+                so_defaults = [
+                    GlobalPermission.VIEW_ANY_PROPOSAL,
+                    GlobalPermission.VIEW_USERS_DETAILS
+                ]
+                user_permissions += so_defaults
+    return list(dict.fromkeys(user_permissions))
 
 
 async def find_user_by_credentials(username: str, password: str) -> Optional[User]:
@@ -163,8 +267,8 @@ WHERE u.PiptUser_Id = :user_id
         first_name=result[1],
         last_name=result[2],
         email=result[3],
-        roles=[],  # TODO: get user permissions
-        permissions=[],  # TODO: get user permissions
+        roles=find_user_roles(user_id),  # TODO: get user permissions
+        permissions=find_user_permissions(user_id),  # TODO: get user permissions
     )
 
 
@@ -226,3 +330,35 @@ WHERE Proposal_Code = :proposal_code
     if result and result[0] == username:
         return True
     return False
+
+
+async def _is_proposal_investigator(user: User, proposal_code: str):
+    """
+    Check if the user is the investigator of a proposal.
+
+    Parameters
+    ----------
+    user
+        The PIPT user
+    proposal_code
+        The proposal code
+
+    Returns
+    -------
+    True if the user is the Investigator of a proposal
+
+    """
+    query = """
+SELECT Username FROM Proposal as p
+    JOIN ProposalCode as pc ON p.ProposalCode_Id = pc.ProposalCode_Id
+    JOIN ProposalInvestigator as pri ON pri.ProposalCode_Id = pc.ProposalCode_Id
+    JOIN PiptUser as pu ON pu.PiptUser_Id = pri.Investigator_Id
+WHERE Proposal_Code = :proposal_code
+And p.Current = 1
+    """
+    values = {"proposal_code": proposal_code}
+    results = await database.fetch_all(query=query, values=values)
+    pis = []
+    if results:
+        pis = [row[0] for row in results]
+    return user.username in pis
