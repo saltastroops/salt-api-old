@@ -5,14 +5,11 @@ from typing import List, Optional
 
 from saltapi.repository.database import database
 
-from saltapi.repository.logging_errors import setup_logging
 import logging
 
-error_log = setup_logging(
-    "error_logger",
-    "saltapi_error.log",
-    logging.Formatter("%(asctime)s [%(levelname)s]:[%(filename)s, line %(lineno)d]. %(message)s."),
-)
+logger = logging.getLogger(__name__)
+logging.basicConfig(format="%(asctime)s [%(levelname)s]:[%(filename)s, line %(lineno)d]. %(message)s.",
+                    datefmt='%Y/%m/%d %H:%M:%S')
 
 
 @dataclasses.dataclass(frozen=True)
@@ -53,7 +50,6 @@ WHERE Username=:username AND Password=MD5(:password)
     values = {"username": username, "password": password}
     result = await database.fetch_one(query=query, values=values)
     if not result:
-        error_log.error(msg=f"No user associated with the username {username}")
         return None
     return await find_user_by_id(result[0])
 
@@ -86,7 +82,6 @@ WHERE u.PiptUser_Id = :user_id
     values = {"user_id": user_id}
     result = await database.fetch_one(query=sql, values=values)
     if not result:
-        error_log.error(msg=f"No user associated with the user_id {user_id}")
         return None
 
     return User(
