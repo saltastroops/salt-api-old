@@ -1,0 +1,17 @@
+version: '3.7'
+
+services:
+  saltapi:
+    build:
+      context: .
+    env_file:
+      - .env
+    environment:
+      - DATABASE_TIMEZONE=${DATABASE_TIMEZONE}
+      - DATABASE_URL=${DATABASE_URL}
+      - HS256_SECRET_KEY=${HS256_SECRET_KEY}
+      - RS256_PUBLIC_KEY_FILE=/auth/rs256_key.pub
+      - RS256_SECRET_KEY_FILE=/auth/rs256_key
+      - STORAGE_SERVICE_URL=${STORAGE_SERVICE_URL}
+    ports:
+      - ${PORT}:8000
