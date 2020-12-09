@@ -10,11 +10,8 @@ from saltapi.repository.database import database
 class GlobalPermission(enum.Enum):
     """A permission."""
 
-    SUBMIT_PROPOSAL = "SUBMIT_PROPOSAL"
     SUBMIT_ANY_PROPOSAL = "SUBMIT_ANY_PROPOSAL"
-    VIEW_PROPOSAL = "VIEW_PROPOSAL"
     VIEW_ANY_PROPOSAL = "VIEW_ANY_PROPOSAL"
-    UPDATE_PROPOSAL = "UPDATE_PROPOSAL"
     UPDATE_ANY_PROPOSAL = "UPDATE_ANY_PROPOSAL"
     VIEW_USERS_DETAILS = "VIEW_USERS_DETAILS"
     UPDATE_USERS_DETAILS = "UPDATE_USERS_DETAILS"
@@ -71,6 +68,11 @@ class UserPermissions:
         if self.submit_proposal(proposal_code):
             return True
         if _is_proposal_investigator(self.user, proposal_code):
+            return True
+        return False
+
+    async def update_proposal(self, proposal_code) -> bool:
+        if self.submit_proposal(proposal_code):
             return True
         return False
 
