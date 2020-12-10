@@ -30,7 +30,7 @@ async def submit_proposal(
         first_name="",
         last_name="",
         email="",
-        roles=[],
+        roles=["Admin"],
         permissions=[],
     )
     auth_token = create_token(user=user, expiry=300, algorithm="RS256")
