@@ -131,7 +131,7 @@ WHERE PiptUser_Id = :user_id
         """
     values = {"user_id": user_id}
     results = await database.fetch_all(query=query, values=values)
-    user_roles = []
+    user_roles: List[GlobalRole] = []
     if results:
         for row in results:
             if row[0] == "RightAdmin" and row[1] == 2:
@@ -160,33 +160,31 @@ async def find_user_permissions(user_id: int) -> List[GlobalPermission]:
 
     user_roles = find_user_roles(user_id=user_id)
 
-    user_permissions = []
+    user_permissions: List[GlobalPermission] = []
 
-    for role in user_roles:
-        if role == GlobalRole.ADMINISTRATOR:
-            admin_defaults = [
-                GlobalPermission.VIEW_ANY_PROPOSAL,
-                GlobalPermission.SUBMIT_ANY_PROPOSAL,
-                GlobalPermission.UPDATE_PERMISSIONS,
-                GlobalPermission.VIEW_ANY_USERS_DETAILS,
-                GlobalPermission.UPDATE_ANY_USERS_DETAILS
-            ]
-            user_permissions += admin_defaults
+    if GlobalRole.ADMINISTRATOR in user_roles:
+        admin_defaults = [
+            GlobalPermission.VIEW_ANY_PROPOSAL,
+            GlobalPermission.SUBMIT_ANY_PROPOSAL,
+            GlobalPermission.UPDATE_PERMISSIONS,
+            GlobalPermission.VIEW_ANY_USERS_DETAILS,
+            GlobalPermission.UPDATE_ANY_USERS_DETAILS
+        ]
+        user_permissions += admin_defaults
 
-        if role == GlobalRole.SALT_ASTRONOMER:
-            sa_defaults = [
-                GlobalPermission.VIEW_ANY_PROPOSAL,
-                GlobalPermission.SUBMIT_ANY_PROPOSAL,
-                GlobalPermission.VIEW_ANY_USERS_DETAILS
-            ]
-            user_permissions += sa_defaults
+    if GlobalRole.SALT_ASTRONOMER in user_roles:
+        sa_defaults = [
+            GlobalPermission.VIEW_ANY_PROPOSAL,
+            GlobalPermission.SUBMIT_ANY_PROPOSAL,
+            GlobalPermission.VIEW_ANY_USERS_DETAILS
+        ]
+        user_permissions += sa_defaults
 
-        if role == GlobalRole.SALT_OPERATOR:
-            so_defaults = [
-                GlobalPermission.VIEW_ANY_PROPOSAL,
-                GlobalPermission.VIEW_ANY_USERS_DETAILS
-            ]
-            user_permissions += so_defaults
+    if GlobalRole.SALT_OPERATOR in user_roles:
+        so_defaults = [
+            GlobalPermission.VIEW_ANY_PROPOSAL
+        ]
+        user_permissions += so_defaults
 
     return list(dict.fromkeys(user_permissions))
 
@@ -340,13 +338,11 @@ async def _is_proposal_investigator(user: User, proposal_code: str):
 
     """
     query = """
-SELECT count(Username) FROM Proposal as p
-    JOIN ProposalCode as pc ON p.ProposalCode_Id = pc.ProposalCode_Id
-    JOIN ProposalInvestigator as pri ON pri.ProposalCode_Id = pc.ProposalCode_Id
-    JOIN PiptUser as pu ON pu.Investigator_Id = pri.Investigator_Id
-WHERE Proposal_Code = :proposal_code
-    And p.Current = 1 
-    And Username = :username
+SELECT COUNT(Username) FROM PiptUser pu
+    JOIN Investigator i On pu.PiptUser_Id = i.PiptUser_Id
+    JOIN ProposalInvestigator pi ON i.Investigator_Id = pi.Investigator_Id
+    JOIN ProposalCode pc ON pi.ProposalCode_Id = pc.ProposalCode_Id
+WHERE Username = :username AND Proposal_Code = :proposal_code;
     """
     values = {"proposal_code": proposal_code, "username": user.username}
     result = await database.fetch_one(query=query, values=values)

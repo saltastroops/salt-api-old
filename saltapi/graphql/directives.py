@@ -11,7 +11,7 @@ from graphql import (
 )
 
 
-class Authenticated(SchemaDirectiveVisitor):
+class AuthenticatedDirective(SchemaDirectiveVisitor):
     """Directive for checking if user is authenticated."""
 
     def visit_field_definition(

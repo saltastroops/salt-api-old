@@ -25,7 +25,7 @@ For example, consider the following type:
 ```
 type Proposal {
   content(proposalCode: ProposalCode): String!
-                @Authenticated
+                @authenticated
 }
 ```
 
@@ -34,7 +34,7 @@ if they may view all proposals.
 
 The directive uses the arguments of the field resolver as required.
 """
-directive @Authenticated on FIELD_DEFINITION
+directive @authenticated on FIELD_DEFINITION
 
 type Query {
     """
@@ -62,7 +62,7 @@ type Mutation {
         The proposal code of the proposal to which this block belongs.
         """
         proposalCode: ProposalCode!
-    ): ID @Authenticated
+    ): ID @authenticated
 
     """
     Submit a proposal.
@@ -87,7 +87,7 @@ type Mutation {
         The proposal code.
         """
         proposalCode: ProposalCode
-    ): ID @Authenticated
+    ): ID @authenticated
 }
 
 type Subscription {
