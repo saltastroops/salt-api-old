@@ -23,9 +23,7 @@ class AuthenticatedDirective(SchemaDirectiveVisitor):
         original_resolver = field.resolve or default_field_resolver
 
         async def new_resolver(*args: Any, **kwargs: Any) -> Any:
-
-            auth = args[1].context["request"].auth
-            if "authenticated" not in auth.scopes:
+            if not args[1].context["request"].user.is_authenticated:
                 raise Exception("User is not authenticated.")
 
             return await original_resolver(*args, **kwargs)
