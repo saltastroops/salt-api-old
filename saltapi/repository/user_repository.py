@@ -135,7 +135,9 @@ WHERE pus.PiptUser_Id = :user_id
     user_roles: Set[GlobalRole] = set()
     if results:
         if results[0][2] == 1:
-            return {GlobalRole.ACTIVE_USER}
+            user_roles.add(GlobalRole.ACTIVE_USER)
+        else:
+            return user_roles
         for row in results:
             if row[0] == "RightAdmin" and row[1] == 2:
                 user_roles.add(GlobalRole.ADMINISTRATOR)
