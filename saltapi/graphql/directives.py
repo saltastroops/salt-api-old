@@ -23,7 +23,10 @@ class AuthenticatedDirective(SchemaDirectiveVisitor):
         original_resolver = field.resolve or default_field_resolver
 
         async def new_resolver(*args: Any, **kwargs: Any) -> Any:
-            if not args[1].context["request"].user.is_authenticated:
+            user = args[1].context["request"].user
+            if not len(user.roles):
+                raise Exception("User is not ley verified.")
+            if not user.is_authenticated:
                 raise Exception("User is not authenticated.")
 
             return await original_resolver(*args, **kwargs)

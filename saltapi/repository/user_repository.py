@@ -167,6 +167,9 @@ async def find_user_permissions(user_id: int) -> Set[GlobalPermission]:
 
     user_permissions: Set[GlobalPermission] = set()
 
+    if not len(user_roles):  # When user have no role user also have no permissions
+        return set()
+
     if GlobalRole.ADMINISTRATOR in user_roles:
         admin_defaults = {
             GlobalPermission.VIEW_ANY_PROPOSAL,
