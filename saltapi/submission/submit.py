@@ -10,8 +10,6 @@ from saltapi.repository.user_repository import User
 import logging
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(format="%(asctime)s [%(levelname)s]:[%(filename)s, line %(lineno)d]. %(message)s.",
-                    datefmt='%Y/%m/%d %H:%M:%S')
 
 proposal_submission_url = f"{os.environ['STORAGE_SERVICE_URL']}/proposal/submit"
 
@@ -58,7 +56,7 @@ async def submit_proposal(
         logger.error(msg=error)
         raise Exception(error)
     else:
-        logger.error(msg=error)
+        logger.error(msg=generic_error)
         raise Exception(generic_error)
 
 

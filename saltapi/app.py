@@ -26,10 +26,13 @@ from saltapi.graphql import resolvers, scalars
 from saltapi.graphql.directives import PermittedForDirective
 from saltapi.repository.database import database
 from saltapi.util.error import UsageError
-
+import logging
 dotenv.load_dotenv()
 
 # error handling
+logger = logging.getLogger(__name__)
+logging.basicConfig(format="%(asctime)s [%(levelname)s]:[%(filename)s, line %(lineno)d]. %(message)s.",
+                    datefmt='%Y/%m/%d %H:%M:%S', level=logging.INFO)
 
 
 def error_response(detail: str, status_code: int) -> Response:

@@ -16,8 +16,6 @@ from saltapi.repository.user_repository import User, is_user_pc, is_user_pi
 
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(format="%(asctime)s [%(levelname)s]:[%(filename)s, line %(lineno)d]. %(message)s.",
-                    datefmt='%Y/%m/%d %H:%M:%S')
 
 
 class Permission(enum.Enum):
@@ -90,7 +88,6 @@ class TokenAuthenticationBackend(AuthenticationBackend):
 
         authorization_header = request.headers["Authorization"]
         if not authorization_header.startswith("Bearer "):
-            logging.basicConfig(level=logging.INFO)
             logger.info(msg=f"Invalid Authorization header sent by user")
             raise AuthenticationError(
                 "Invalid Authorization header value. The header "

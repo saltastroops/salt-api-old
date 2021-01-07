@@ -14,8 +14,8 @@ from saltapi.auth import authorization
 from saltapi.auth.authorization import Permission, Role
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(format="%(asctime)s [%(levelname)s]:[%(filename)s, line %(lineno)d]. %(message)s.",
-                    datefmt='%Y/%m/%d %H:%M:%S')
+# logging.basicConfig(format="%(asctime)s [%(levelname)s]:[%(filename)s, line %(lineno)d]. %(message)s.",
+#                     datefmt='%Y/%m/%d %H:%M:%S', level=logging.INFO)
 
 
 class PermittedForDirective(SchemaDirectiveVisitor):
@@ -40,7 +40,6 @@ class PermittedForDirective(SchemaDirectiveVisitor):
             if not authorization.has_any_of_roles_or_permissions(
                 user=user, auth=auth, roles=roles, permissions=permissions, **kwargs
             ):
-                logging.basicConfig(level=logging.INFO)
                 logger.info(msg="Not authorized")
                 raise Exception("Not authorized.")
 

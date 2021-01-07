@@ -8,8 +8,6 @@ from saltapi.repository.database import database
 import logging
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(format="%(asctime)s [%(levelname)s]:[%(filename)s, line %(lineno)d]. %(message)s.",
-                    datefmt='%Y/%m/%d %H:%M:%S')
 
 
 @dataclasses.dataclass(frozen=True)

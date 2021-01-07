@@ -11,8 +11,6 @@ from saltapi.repository.user_repository import User
 from saltapi.util.error import UsageError
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(format="%(asctime)s [%(levelname)s]:[%(filename)s, line %(lineno)d]. %(message)s.",
-                    datefmt='%Y/%m/%d %H:%M:%S')
 
 
 @dataclasses.dataclass(frozen=True)
@@ -68,7 +66,6 @@ def parse_token(token: str, algorithm: str = "HS256") -> TokenPayload:
         payload = jwt.decode(token, key, algorithms=[algorithm])
         return TokenPayload(user_id=payload["user_id"], roles=payload.get("roles", []))
     except jwt.ExpiredSignatureError:
-        logging.basicConfig(level=logging.INFO)
         logger.info(msg=f"The authentication token has expired.")
         raise UsageError("The authentication token has expired.")
     except Exception:

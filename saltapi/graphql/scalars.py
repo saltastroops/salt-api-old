@@ -6,8 +6,6 @@ from dateutil import parser
 import logging
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(format="%(asctime)s [%(levelname)s]:[%(filename)s, line %(lineno)d]. %(message)s.",
-                    datefmt='%Y/%m/%d %H:%M:%S')
 
 
 def serialize_proposal_code(proposal_code: str) -> str:
@@ -18,7 +16,6 @@ def serialize_proposal_code(proposal_code: str) -> str:
 def parse_proposal_code(proposal_code: str) -> str:
     """Parse a proposal code value."""
     if not proposal_code.startswith("2"):
-        logging.basicConfig(level=logging.INFO)
         logger.info(msg=f"Invalid proposal code")
         raise ValueError("Invalid proposal code.")
     return str(proposal_code)
