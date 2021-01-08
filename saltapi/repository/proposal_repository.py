@@ -23,7 +23,7 @@ def get_proposal_code(user_proposal: Union[str, BinaryIO]) -> Optional[str]:
         raise ValueError("The file supplied is not a zip file")
 
     if proposal.tag != "Proposal":
-        raise ValueError("The root element of your xml file is not called Proposal")
+        raise ValueError("The root element in the file Proposal.xml is not called Proposal")
 
     proposal_code = proposal.attrib["code"]
 
