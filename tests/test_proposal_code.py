@@ -48,13 +48,13 @@ def test_proposal_code_is_unsubmitted():
 
 
 # testing if the root element of the file 'Proposal.xml' is called 'Proposal'
-def test_root_element_is_called_proposal():
+def test_root_element_is_not_called_proposal():
     file = b'''<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
           <Proposals  code="2020-2-SCI-043" final="true">
           </Proposals>'''
     with pytest.raises(ValueError) as excinfo:
         get_proposal_code(create_zip(file, "Proposal.xml"))
-    assert "The root element of your xml file is not called Proposal" in str(excinfo.value)
+    assert "The root element in the file Proposal.xml" in str(excinfo.value)
 
 
 @pytest.mark.parametrize("code", [("", None)])
