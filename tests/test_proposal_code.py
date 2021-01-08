@@ -4,159 +4,84 @@ from saltapi.repository.proposal_repository import get_proposal_code
 import pytest
 
 
-def create_zip():
+def create_zip(xml: bytes, filename: str):
     archive = BytesIO()
     with ZipFile(archive, 'w') as zip_file:
-        with zip_file.open("Proposal.xml", "w") as proposal_file:
-            proposal_file.write(b'''<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-                                    <ns2:Proposal xmlns="http://www.salt.ac.za/PIPT/Proposal/Shared/2.7"
-                                    xmlns:ns2="http://www.salt.ac.za/PIPT/Proposal/Phase2/4.8"
-                                    xmlns:ns3="http://www.salt.ac.za/PIPT/Shared/1.4"
-                                    xmlns:ns4="http://www.salt.ac.za/DataTransfer"
-                                    xmlns:ns5="http://www.salt.ac.za/PIPT/BVIT/Phase1/1.0"
-                                    xmlns:ns6="http://www.salt.ac.za/PIPT/BVIT/Phase2/1.6"
-                                    xmlns:ns7="http://www.salt.ac.za/PIPT/Salticam/Phase1/1.5"
-                                    xmlns:ns8="http://www.salt.ac.za/PIPT/Salticam/Phase2/1.9"
-                                    xmlns:ns9="http://www.salt.ac.za/PIPT/RSS/Phase1/1.12"
-                                    xmlns:ns10="http://www.salt.ac.za/PIPT/RSS/Phase2/2.3"
-                                    xmlns:ns11="http://www.salt.ac.za/PIPT/RSS/Shared/1.11"
-                                    xmlns:ns12="http://www.salt.ac.za/PIPT/HRS/Phase1/1.1"
-                                    xmlns:ns13="http://www.salt.ac.za/PIPT/HRS/Phase2/1.7" code="2020-2-SCI-043"
-                                    final="true"
-                                    PrincipalInvestigator="ag@saao.ac.za"
-                                    PrincipalContact="ag@saao.ac.za"></ns2:Proposal>''')
+        with zip_file.open(filename, "w") as proposal_file:
+            proposal_file.write(xml)
     return archive
 
 
-def zipfile_no_proposal_code():
-    archive = BytesIO()
-    with ZipFile(archive, 'w') as zip_file:
-        with zip_file.open("Proposal.xml", "w") as proposal_file:
-            proposal_file.write(b'''<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-                                    <ns2:Proposal xmlns="http://www.salt.ac.za/PIPT/Proposal/Shared/2.7"
-                                    xmlns:ns2="http://www.salt.ac.za/PIPT/Proposal/Phase2/4.8"
-                                    xmlns:ns3="http://www.salt.ac.za/PIPT/Shared/1.4"
-                                    xmlns:ns4="http://www.salt.ac.za/DataTransfer"
-                                    xmlns:ns5="http://www.salt.ac.za/PIPT/BVIT/Phase1/1.0"
-                                    xmlns:ns6="http://www.salt.ac.za/PIPT/BVIT/Phase2/1.6"
-                                    xmlns:ns7="http://www.salt.ac.za/PIPT/Salticam/Phase1/1.5"
-                                    xmlns:ns8="http://www.salt.ac.za/PIPT/Salticam/Phase2/1.9"
-                                    xmlns:ns9="http://www.salt.ac.za/PIPT/RSS/Phase1/1.12"
-                                    xmlns:ns10="http://www.salt.ac.za/PIPT/RSS/Phase2/2.3"
-                                    xmlns:ns11="http://www.salt.ac.za/PIPT/RSS/Shared/1.11"
-                                    xmlns:ns12="http://www.salt.ac.za/PIPT/HRS/Phase1/1.1"
-                                    xmlns:ns13="http://www.salt.ac.za/PIPT/HRS/Phase2/1.7"
-                                    final="true"
-                                    PrincipalInvestigator="ag@saao.ac.za"
-                                    PrincipalContact="ag@saao.ac.za"></ns2:Proposal>''')
-    return archive
-
-
-def zipfile_proposal_unsubmitted():
-    archive = BytesIO()
-    with ZipFile(archive, 'w') as zip_file:
-        with zip_file.open("Proposal.xml", "w") as proposal_file:
-            proposal_file.write(b'''<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-                                    <ns2:Proposal xmlns="http://www.salt.ac.za/PIPT/Proposal/Shared/2.7"
-                                    xmlns:ns2="http://www.salt.ac.za/PIPT/Proposal/Phase2/4.8"
-                                    xmlns:ns3="http://www.salt.ac.za/PIPT/Shared/1.4"
-                                    xmlns:ns4="http://www.salt.ac.za/DataTransfer"
-                                    xmlns:ns5="http://www.salt.ac.za/PIPT/BVIT/Phase1/1.0"
-                                    xmlns:ns6="http://www.salt.ac.za/PIPT/BVIT/Phase2/1.6"
-                                    xmlns:ns7="http://www.salt.ac.za/PIPT/Salticam/Phase1/1.5"
-                                    xmlns:ns8="http://www.salt.ac.za/PIPT/Salticam/Phase2/1.9"
-                                    xmlns:ns9="http://www.salt.ac.za/PIPT/RSS/Phase1/1.12"
-                                    xmlns:ns10="http://www.salt.ac.za/PIPT/RSS/Phase2/2.3"
-                                    xmlns:ns11="http://www.salt.ac.za/PIPT/RSS/Shared/1.11"
-                                    xmlns:ns12="http://www.salt.ac.za/PIPT/HRS/Phase1/1.1"
-                                    xmlns:ns13="http://www.salt.ac.za/PIPT/HRS/Phase2/1.7" code="Unsubmitted-"
-                                    final="true"
-                                    PrincipalInvestigator="ag@saao.ac.za"
-                                    PrincipalContact="ag@saao.ac.za"></ns2:Proposal>''')
-    return archive
-
-
-def zipfile_no_xml_file():
-    archive = BytesIO()
-    with ZipFile(archive, 'w') as zip_file:
-        with zip_file.open("file.xml", "w") as proposal_file:
-            proposal_file.write(b'''<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-                                    <ns2:Proposal xmlns="http://www.salt.ac.za/PIPT/Proposal/Shared/2.7"
-                                    xmlns:ns2="http://www.salt.ac.za/PIPT/Proposal/Phase2/4.8"
-                                    xmlns:ns3="http://www.salt.ac.za/PIPT/Shared/1.4"
-                                    xmlns:ns4="http://www.salt.ac.za/DataTransfer"
-                                    xmlns:ns5="http://www.salt.ac.za/PIPT/BVIT/Phase1/1.0"
-                                    xmlns:ns6="http://www.salt.ac.za/PIPT/BVIT/Phase2/1.6"
-                                    xmlns:ns7="http://www.salt.ac.za/PIPT/Salticam/Phase1/1.5"
-                                    xmlns:ns8="http://www.salt.ac.za/PIPT/Salticam/Phase2/1.9"
-                                    xmlns:ns9="http://www.salt.ac.za/PIPT/RSS/Phase1/1.12"
-                                    xmlns:ns10="http://www.salt.ac.za/PIPT/RSS/Phase2/2.3"
-                                    xmlns:ns11="http://www.salt.ac.za/PIPT/RSS/Shared/1.11"
-                                    xmlns:ns12="http://www.salt.ac.za/PIPT/HRS/Phase1/1.1"
-                                    xmlns:ns13="http://www.salt.ac.za/PIPT/HRS/Phase2/1.7" code="2020-2-SCI-043"
-                                    final="true"
-                                    PrincipalInvestigator="ag@saao.ac.za"
-                                    PrincipalContact="ag@saao.ac.za"></ns2:Proposal>''')
-    return archive
-
-
-def zipfile_root_element_not_proposal():
-    archive = BytesIO()
-    with ZipFile(archive, 'w') as zip_file:
-        with zip_file.open("Proposal.xml", "w") as proposal_file:
-            proposal_file.write(b'''<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-                                    <ns2:Proposals xmlns="http://www.salt.ac.za/PIPT/Proposal/Shared/2.7"
-                                    xmlns:ns2="http://www.salt.ac.za/PIPT/Proposal/Phase2/4.8"
-                                    xmlns:ns3="http://www.salt.ac.za/PIPT/Shared/1.4"
-                                    xmlns:ns4="http://www.salt.ac.za/DataTransfer"
-                                    xmlns:ns5="http://www.salt.ac.za/PIPT/BVIT/Phase1/1.0"
-                                    xmlns:ns6="http://www.salt.ac.za/PIPT/BVIT/Phase2/1.6"
-                                    xmlns:ns7="http://www.salt.ac.za/PIPT/Salticam/Phase1/1.5"
-                                    xmlns:ns8="http://www.salt.ac.za/PIPT/Salticam/Phase2/1.9"
-                                    xmlns:ns9="http://www.salt.ac.za/PIPT/RSS/Phase1/1.12"
-                                    xmlns:ns10="http://www.salt.ac.za/PIPT/RSS/Phase2/2.3"
-                                    xmlns:ns11="http://www.salt.ac.za/PIPT/RSS/Shared/1.11"
-                                    xmlns:ns12="http://www.salt.ac.za/PIPT/HRS/Phase1/1.1"
-                                    xmlns:ns13="http://www.salt.ac.za/PIPT/HRS/Phase2/1.7" code="2020-2-SCI-043"
-                                    final="true"
-                                    PrincipalInvestigator="ag@saao.ac.za"
-                                    PrincipalContact="ag@saao.ac.za"></ns2:Proposals>''')
-    return archive
-
-
-def test_root_element_has_no_proposal_code():
-    file = zipfile_no_proposal_code()
-    with pytest.raises(ValueError) as execinfo:
-        get_proposal_code(file)
-    assert "No proposal code supplied in the file Proposal.xml." in str(execinfo.value)
-
-
-def test_no_proposal_xml_file():
-    file = zipfile_no_xml_file()
-    with pytest.raises(KeyError) as execinfo:
-        get_proposal_code(file)
-    assert "There is no item named 'Proposal.xml' in the archive" in str(execinfo.value)
-
-
+# testing to see if the the file 'Proposal.xml' has the proposal code attribute
 def test_no_proposal_code():
-    file = zipfile_no_proposal_code()
-    with pytest.raises(ValueError) as execinfo:
-        get_proposal_code(file)
-    assert "No proposal code supplied in the file Proposal.xml." in str(execinfo.value)
+    file = b'''<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+          <Proposal  final="true">
+          </Proposal>'''
+    with pytest.raises(ValueError) as excinfo:
+        get_proposal_code(create_zip(file, "Proposal.xml"))
+    assert "No proposal code" in str(excinfo.value)
 
 
+# testing to see if the zipped folder provided has a file named 'Proposal.xml'
+def test_no_proposal_xml_file():
+    file = b'''<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+          <Proposal  code="2020-2-SCI-043" final="true">
+          </Proposal>'''
+    with pytest.raises(KeyError) as excinfo:
+        get_proposal_code(create_zip(file, "file.xml"))
+    assert "No file called Proposal.xml" in str(excinfo.value)
+
+
+# testing to see if proposal code supplied in 'Proposal.xml' is valid
 def test_valid_proposal_code():
-    file = create_zip()
-    assert get_proposal_code(file) == "2020-2-SCI-043"
+    file = b'''<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+          <Proposal  code="2020-2-SCI-043" final="true">
+          </Proposal>'''
+    assert get_proposal_code(create_zip(file, "Proposal.xml")) == "2020-2-SCI-043"
 
 
 def test_proposal_code_is_unsubmitted():
-    file = zipfile_proposal_unsubmitted()
-    assert get_proposal_code(file) is None
+    file = b'''<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+          <Proposal  code="Unsubmitted-" final="true">
+          </Proposal>'''
+    assert get_proposal_code(create_zip(file, "Proposal.xml")) is None
 
 
+# testing if the root element of the file 'Proposal.xml' is called 'Proposal'
 def test_root_element_is_called_proposal():
-    file = zipfile_root_element_not_proposal()
-    with pytest.raises(ValueError) as execinfo:
-        get_proposal_code(file)
-    assert "The root element of your xml file is not called Proposal" in str(execinfo.value)
+    file = b'''<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+          <Proposals  code="2020-2-SCI-043" final="true">
+          </Proposals>'''
+    with pytest.raises(ValueError) as excinfo:
+        get_proposal_code(create_zip(file, "Proposal.xml"))
+    assert "The root element of your xml file is not called Proposal" in str(excinfo.value)
+
+
+@pytest.mark.parametrize("code", [("", None)])
+def test_proposal_code_as_empty_string(code):
+    file = b'''<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+               <Proposal code="" final="true">
+               </Proposal>'''
+    assert get_proposal_code(create_zip(file, "Proposal.xml")) is None
+
+
+@pytest.mark.parametrize("code, output", [("12", "Invalid proposal code: 12")])
+def test_wrong_proposal_code(code, output):
+    file = b'''<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+               <Proposal code="12" final="true">
+               </Proposal>'''
+    with pytest.raises(ValueError):
+        get_proposal_code(create_zip(file, "Proposal.xml"))
+    assert "Invalid proposal code" in output
+
+
+@pytest.mark.parametrize("code, output", [("submitted", "Invalid proposal code: submitted")])
+def test_wrong_proposal_code_with_xml_namespace(code, output):
+    file = b'''<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+               <ns2:Proposal xmlns:ns2="http://www.salt.ac.za/PIPT/Proposal/Shared/2.7"
+                code="submitted"></ns2:Proposal>'''
+    with pytest.raises(ValueError):
+        get_proposal_code(create_zip(file, "Proposal.xml"))
+    assert "Invalid proposal code" in output
+
+
