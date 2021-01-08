@@ -11,20 +11,19 @@ def get_proposal_code(user_proposal: Union[str, BinaryIO]) -> Optional[str]:
     try:
         archive = ZipFile(user_proposal, "r")
         file = archive.open("Proposal.xml")
-    except FileNotFoundError:
-        raise KeyError("There is no item named 'Proposal.xml' in the archive") from None
+    except KeyError:
+        raise KeyError("No file called Proposal.xml was found") from None
 
     tree = ElementTree.parse(file)
     proposal = tree.getroot()
     if "code" not in proposal.attrib:
         raise ValueError("No proposal code supplied in the file Proposal.xml.")
 
-    is_file_zipped = zipfile.is_zipfile(user_proposal)
-    if not is_file_zipped:
+    if not zipfile.is_zipfile(user_proposal):
         raise ValueError("The file supplied is not a zip file")
 
-    if proposal.tag.split("}")[1] != "Proposal":
-        raise ValueError("The root element of your xml file is not called Proposal")
+    if proposal.tag != "Proposal":
+        raise ValueError("The root element in the file Proposal.xml is not called Proposal")
 
     proposal_code = proposal.attrib["code"]
 
