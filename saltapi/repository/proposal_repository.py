@@ -23,7 +23,8 @@ def get_proposal_code(proposal_zip: Union[str, BinaryIO]) -> Optional[str]:
     if "code" not in proposal.attrib:
         raise ValueError("No proposal code supplied in the file Proposal.xml.")
 
-    if proposal.tag != "Proposal":
+    _, _, tag = proposal.tag.rpartition("}")  # ignore namespace
+    if tag != "Proposal":
         raise ValueError(
             "The root element in the file Proposal.xml is not called Proposal"
         )
