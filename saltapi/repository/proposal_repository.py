@@ -1,9 +1,10 @@
 """Access to proposal information."""
 
-from typing import BinaryIO, Optional, Union
-from defusedxml.ElementTree import parse
-from zipfile import ZipFile
 import zipfile
+from typing import BinaryIO, Optional, Union
+from zipfile import ZipFile
+
+from defusedxml.ElementTree import parse
 
 
 def get_proposal_code(proposal_zip: Union[str, BinaryIO]) -> Optional[str]:
@@ -23,7 +24,9 @@ def get_proposal_code(proposal_zip: Union[str, BinaryIO]) -> Optional[str]:
         raise ValueError("No proposal code supplied in the file Proposal.xml.")
 
     if proposal.tag != "Proposal":
-        raise ValueError("The root element in the file Proposal.xml is not called Proposal")
+        raise ValueError(
+            "The root element in the file Proposal.xml is not called Proposal"
+        )
 
     proposal_code = proposal.attrib["code"]
 
@@ -33,6 +36,3 @@ def get_proposal_code(proposal_zip: Union[str, BinaryIO]) -> Optional[str]:
         return None
     else:
         raise ValueError(f"Invalid proposal code: {proposal_code}.")
-
-
-print(get_proposal_code("/home/lonwabolap/Downloads/Proposal.zip"))
