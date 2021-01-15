@@ -12,7 +12,7 @@ proposal_submission_url = f"{os.environ['STORAGE_SERVICE_URL']}/proposal/submit"
 
 
 async def submit_proposal(
-    proposal: UploadFile, proposal_code: Optional[str], submitter: str
+    proposal: UploadFile, proposal_code: Optional[str], user: User
 ) -> str:
     """Submit a proposal."""
     generic_error = "The proposal could not be sent to the storage service."
@@ -20,7 +20,7 @@ async def submit_proposal(
         "proposal": (proposal.filename, proposal.file, "application/octet-stream"),
     }
     data = {
-        "submitter": submitter,
+        "submitter": user.username,
     }
     if proposal_code:
         data["proposal_code"] = proposal_code

@@ -118,3 +118,10 @@ def test_can_authenticate_with_valid_token(monkeypatch):
     # authenticate with this token
     r = client.get("/graphql", headers={"Authorization": f"Bearer {token}"})
     assert r.status_code == 200
+
+
+def test_cannot_submit_proposal_if_not_authenticated(monkeypatch):
+    monkeypatch.setattr(
+        user_repository, "find_user_by_credentials", mock_find_user_by_credentials
+    )
+    pass
