@@ -7,6 +7,9 @@ from starlette.datastructures import UploadFile
 
 from saltapi.auth.token import create_token
 from saltapi.repository.user_repository import User
+import logging
+
+logger = logging.getLogger(__name__)
 
 proposal_submission_url = f"{os.environ['STORAGE_SERVICE_URL']}/proposal/submit"
 
@@ -41,6 +44,7 @@ async def submit_proposal(
                 proposal_submission_url, data=data, files=files, headers=headers
             )
     except Exception:
+        logger.exception(msg=generic_error)
         raise Exception(generic_error)
     submission_id = _submission_id(response)
     if submission_id:
@@ -49,8 +53,10 @@ async def submit_proposal(
     # error handling
     error = _submission_error(response)
     if error:
+        logger.error(msg=error)
         raise Exception(error)
     else:
+        logger.error(msg=generic_error)
         raise Exception(generic_error)
 
 

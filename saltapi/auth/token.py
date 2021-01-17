@@ -3,11 +3,14 @@ import dataclasses
 import os
 from time import time
 from typing import List, Optional
+import logging
 
 import jwt
 
 from saltapi.repository.user_repository import User
 from saltapi.util.error import UsageError
+
+logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -38,6 +41,7 @@ def create_token(
         with open(os.environ["RS256_SECRET_KEY_FILE"]) as f:
             key = f.read()
     else:
+        logger.error(msg=f"Unsupported algorithm: {algorithm}")
         raise ValueError(f"Unsupported algorithm: {algorithm}")
     return jwt.encode(payload, key, algorithm=algorithm).decode("utf-8")
 
@@ -56,11 +60,14 @@ def parse_token(token: str, algorithm: str = "HS256") -> TokenPayload:
         with open(os.environ["RS256_PUBLIC_KEY_FILE"]) as f:
             key = f.read()
     else:
+        logger.error(msg=f"Unsupported algorithm: {algorithm}")
         raise ValueError(f"Unsupported algorithm: {algorithm}")
     try:
         payload = jwt.decode(token, key, algorithms=[algorithm])
         return TokenPayload(user_id=payload["user_id"], roles=payload.get("roles", []))
     except jwt.ExpiredSignatureError:
+        logger.info(msg=f"The authentication token has expired.")
         raise UsageError("The authentication token has expired.")
     except Exception:
+        logger.exception(msg="Invalid authentication token.")
         raise UsageError("Invalid authentication token.")

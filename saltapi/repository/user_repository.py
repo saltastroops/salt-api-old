@@ -5,6 +5,10 @@ from typing import List, Optional
 
 from saltapi.repository.database import database
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 @dataclasses.dataclass(frozen=True)
 class User:

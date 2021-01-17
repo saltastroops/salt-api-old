@@ -4,10 +4,12 @@ import enum
 import os
 from datetime import datetime
 from typing import List
-
+import logging
 from pytz import timezone
 
 from saltapi.repository.database import database
+
+logger = logging.getLogger(__name__)
 
 
 class SubmissionStatus(enum.Enum):
@@ -23,6 +25,7 @@ class SubmissionStatus(enum.Enum):
         for status in SubmissionStatus:
             if status.value == value:
                 return status
+        logger.error(msg=f"Unknown submission status value: {value}")
         raise ValueError(f"Unknown submission status value: {value}")
 
 
@@ -39,6 +42,7 @@ class LogMessageType(enum.Enum):
         for lmt in LogMessageType:
             if lmt.value == value:
                 return lmt
+        logger.error(msg=f"Unknown log message type value: {value}")
         raise ValueError(f"Unknown log message type value: {value}")
 
 
@@ -64,6 +68,9 @@ WHERE s.Identifier = :identifier
     values = {"identifier": submission_identifier}
     row = await database.fetch_one(query=query, values=values)
     if not row:
+        logger.error(
+            msg=f"Unknown submission identifier: {submission_identifier}"
+        )
         raise ValueError(f"Unknown submission identifier: {submission_identifier}")
     return SubmissionStatus.from_value(row[0])
 

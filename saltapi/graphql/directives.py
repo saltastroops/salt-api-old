@@ -1,5 +1,5 @@
 """GraphQL schema directives."""
-
+import logging
 from typing import Any, Union
 
 from ariadne import SchemaDirectiveVisitor
@@ -12,6 +12,8 @@ from graphql import (
 
 from saltapi.auth import authorization
 from saltapi.auth.authorization import Permission, Role
+
+logger = logging.getLogger(__name__)
 
 
 class PermittedForDirective(SchemaDirectiveVisitor):
@@ -36,6 +38,7 @@ class PermittedForDirective(SchemaDirectiveVisitor):
             if not authorization.has_any_of_roles_or_permissions(
                 user=user, auth=auth, roles=roles, permissions=permissions, **kwargs
             ):
+                logger.info(msg="Not authorized")
                 raise Exception("Not authorized.")
 
             return await original_resolver(*args, **kwargs)

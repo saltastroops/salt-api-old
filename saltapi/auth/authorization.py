@@ -1,7 +1,7 @@
 """User roles relevant for authorization."""
 import enum
 from typing import Any, List, Optional, Tuple
-
+import logging
 from starlette.authentication import (
     AuthCredentials,
     AuthenticationBackend,
@@ -13,6 +13,9 @@ from starlette.requests import HTTPConnection
 from saltapi.auth.token import parse_token
 from saltapi.repository import user_repository
 from saltapi.repository.user_repository import User, is_user_pc, is_user_pi
+
+
+logger = logging.getLogger(__name__)
 
 
 class Permission(enum.Enum):
@@ -27,6 +30,7 @@ class Permission(enum.Enum):
         for _name, member in Permission.__members__.items():
             if _name == name:
                 return member
+        logger.error(msg=f"Unknown permission: {name}")
         raise ValueError(f"Unknown permission: {name}")
 
 
@@ -41,6 +45,7 @@ class Role(enum.Enum):
         for _name, member in Role.__members__.items():
             if _name == name:
                 return member
+        logger.error(msg=f"Unknown role: {name}")
         raise ValueError(f"Unknown role: {name}")
 
 
@@ -83,6 +88,7 @@ class TokenAuthenticationBackend(AuthenticationBackend):
 
         authorization_header = request.headers["Authorization"]
         if not authorization_header.startswith("Bearer "):
+            logger.info(msg=f"Invalid Authorization header sent by user")
             raise AuthenticationError(
                 "Invalid Authorization header value. The header "
                 "value must have the format Bearer <token>."
@@ -92,11 +98,13 @@ class TokenAuthenticationBackend(AuthenticationBackend):
         try:
             payload = parse_token(user_token)
         except Exception:
+            logger.exception(msg=f"Invalid or expired authentication token.")
             raise AuthenticationError("Invalid or expired authentication token.")
 
         user = await user_repository.find_user_by_id(int(payload.user_id))
 
         if not user:
+            logger.error(msg=f"No user found for id {payload.user_id}.")
             raise AuthenticationError("No user found for user id.")
 
         return AuthCredentials(["authenticated"]), AuthenticatedUser(user)
