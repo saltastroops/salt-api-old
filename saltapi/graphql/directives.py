@@ -14,8 +14,6 @@ from saltapi.auth import authorization
 from saltapi.auth.authorization import Permission, Role
 
 logger = logging.getLogger(__name__)
-# logging.basicConfig(format="%(asctime)s [%(levelname)s]:[%(filename)s, line %(lineno)d]. %(message)s.",
-#                     datefmt='%Y/%m/%d %H:%M:%S', level=logging.INFO)
 
 
 class PermittedForDirective(SchemaDirectiveVisitor):
